@@ -1,0 +1,623 @@
+% ================== Chapter 3 Methodology Start ==================
+% Method section synchronized with:
+% bayes_unified_融合可靠_自适应R_i_双视图模型预测_分开model.py
+% Updated project name:
+% NSE: Non-Destructive Supervision Extraction from Noisy Partial Labels
+% =================================================================
+
+\section{Method}
+\label{sec:methodology}
+
+\subsection{Problem Setup}
+We consider Noisy Partial Label Learning (NPLL). The training set is
+$\mathcal{D}=\{(\mathbf{x}_i,Y_i)\}_{i=1}^{N}$, where
+$Y_i\subseteq\{1,\ldots,C\}$ is a candidate label set. In standard PLL the
+ground-truth label is assumed to be contained in $Y_i$, whereas in NPLL this
+assumption may be violated by noisy annotations. For real crowdsourced
+datasets, $Y_i$ is replaced by a soft crowd prior that summarizes multiple
+annotators. The goal is to train an encoder $f_\theta$ and classifier
+$h_\phi$ while avoiding cross-epoch carry-over of model-induced supervision
+state.
+
+\subsection{Overview of NSE}
+The proposed method is \textbf{NSE}. It replaces persistent supervision-state
+refinement with an epoch-wise restored supervision extraction path.
+Each epoch contains four steps:
+
+\begin{itemize}
+    \item build a single-head cosine KNN graph from weak-view features and run
+    the first Topology-DAES extraction to obtain geometric evidence
+    $P_{\mathrm{geo}}$ from the restored working prior;
+    \item compute weak/strong model predictions and introduce them gradually
+    through warm-up;
+    \item project model evidence by the native candidate/crowd prior and fuse it
+    with $P_{\mathrm{geo}}$ through sample-wise reliability arbitration;
+    \item run the second Topology-DAES propagation and train on active samples
+    formed by reliable pseudo-labels and stable consensus-based salvaged samples.
+\end{itemize}
+
+The central fusion rule is
+\begin{equation}
+    P^{(2)}_{\mathrm{in},i}
+    =
+    \operatorname{Norm}\!\left(
+    r_i P_{\mathrm{geo},i} + (1-r_i)\hat{P}_{\mathrm{model},i}
+    \right),
+    \label{eq:unified_fusion}
+\end{equation}
+where $\hat{P}_{\mathrm{model},i}$ is constrained by the restored native prior.
+Thus the model can influence propagation within the epoch, but it cannot write
+its prediction into the next epoch's source state.
+
+\begin{algorithm}[t]
+\centering
+\fbox{\begin{minipage}{0.95\linewidth}
+\small
+\begin{enumerate}
+    \item Restore working prior: $\tilde{\Omega}_i^t \leftarrow \Omega_i^0$ for all $i$.
+    \item Extract weak-view features and build a cosine KNN graph $G^t$.
+    \item Run first Topology-DAES on $\tilde{\Omega}^t$ to obtain $P_{\mathrm{geo}}^t$.
+    \item Compute weak/strong model belief and warm it up into $P_{\mathrm{model}}^{\mathrm{eff},t}$.
+    \item Project model evidence by $\tilde{\Omega}^t$ and fuse it with $P_{\mathrm{geo}}^t$.
+    \item Run second Topology-DAES to obtain $P^{(2),t}$ and pseudo-labels.
+    \item Select reliable set $R_t$ and salvage set $S_t$; set $A_t=R_t\cup S_t$.
+    \item Update model parameters with active-set MixUp training.
+    \item Update model-side states such as prototypes and histories; discard epoch-local evidence.
+\end{enumerate}
+\end{minipage}}
+\caption{Epoch-wise Source Restoration in NSE. Steps 1--7 are repeated every epoch; only model-side learning state is carried across epochs, while candidate membership, pseudo-targets, and sample-promotion state are regenerated as temporary evidence.}
+\label{alg:nse}
+\end{algorithm}
+
+\subsection{Epoch-Wise Source Restoration Principle}
+NSE does not claim that weak supervision should never be transformed. It
+separates the native weak-supervision record from epoch-local working
+supervision and from later-epoch persistent supervision state. We distinguish
+four kinds of state. The \emph{native source record} $\Omega_i^0$ is the stored
+candidate mask for synthetic NPLL data or the stored soft crowd prior for real
+crowdsourced data. The \emph{epoch-local evidence} includes
+$P_{\mathrm{geo}}^t$, $P_{\mathrm{in}}^{(2),t}$, $P^{(2),t}$, pseudo-labels,
+and active eligibility. The \emph{persistent supervision state} is any
+supervision object inherited by later epochs, including candidate membership,
+reconstructed candidate sets, soft pseudo-targets, label-confidence or
+importance weights, and reliable/unreliable promotion states. The
+\emph{model-side learning state} includes network weights, optimizer state,
+prototype exponential moving averages, and temporal diagnostic histories. NSE is
+non-destructive with respect to persistent supervision state, not with respect to
+model learning state. At the beginning of epoch $t$, NSE restores the working
+prior from the native source:
+\begin{equation}
+    \tilde{\Omega}_i^t
+    =
+    \operatorname{Restore}(\Omega_i^0)
+    =
+    \Omega_i^0 .
+    \label{eq:fixed_source}
+\end{equation}
+All denoising, disambiguation, topology propagation, model projection,
+pseudo-label extraction, reliable selection, and salvage are then performed on
+temporary evidence:
+\begin{equation}
+    E_i^t
+    =
+    \operatorname{Extract}
+    \left(
+    \tilde{\Omega}_i^t,
+    f_{\theta}^{t-1},
+    G^t
+    \right),
+    \qquad
+    A_t=\operatorname{Select}(E^t),
+    \label{eq:epoch_extract}
+\end{equation}
+where $E_i^t$ includes quantities such as $P_{\mathrm{geo},i}^t$,
+$P_{\mathrm{in},i}^{(2),t}$, $P_i^{(2),t}$, and the current pseudo-labels used
+for active training. These quantities can be denoised, sharpened, filtered, or
+expanded through consensus within the epoch, but they are not written back into
+candidate membership, pseudo-target, label-weight, or sample-promotion state for
+the next epoch.
+
+Instead, NSE learns an extraction path:
+\begin{equation}
+    \Omega_i^0
+    \rightarrow
+    \tilde{\Omega}_i^t
+    \rightarrow
+    P_{\mathrm{geo},i}^t
+    \rightarrow
+    P_{\mathrm{in},i}^{(2),t}
+    \rightarrow
+    A_t,
+    \label{eq:extraction_path}
+\end{equation}
+where $P_{\mathrm{geo},i}^t$ and $P_{\mathrm{in},i}^{(2),t}$ are temporary
+evidence distributions and $A_t$ is the active training set. After the epoch,
+the working evidence is discarded and the next epoch again starts from
+$\Omega_i^0$.
+
+This principle separates NSE from persistent carry-over updates. A persistent
+supervision-state update can be abstracted as
+\begin{equation}
+    S_i^{t+1}
+    =
+    U\left(S_i^t,E_i^t;f_\theta^t\right),
+    \label{eq:write_back_source}
+\end{equation}
+where $S_i^t$ denotes whatever supervision state will be reused by the next
+epoch. It may be a candidate set, a reconstructed candidate set, a soft
+pseudo-target, a label-importance vector, or a sample-reliability/promotion
+state. For a
+soft write-back form,
+\begin{equation}
+    S_i^{t+1}
+    =
+    \operatorname{Norm}\!\left(
+    (1-\alpha_{\mathrm{wb}})S_i^t+\alpha_{\mathrm{wb}} E_i^t
+    \right),
+    \label{eq:soft_write_back}
+\end{equation}
+an update error rate $e_t$ can accumulate recursively as
+\begin{equation}
+    \rho_{t+1} \le (1-\alpha_{\mathrm{wb}})\rho_t+\alpha_{\mathrm{wb}} e_t.
+    \label{eq:source_contamination}
+\end{equation}
+NSE prevents this persistent supervision-state drift channel by restoring
+$\tilde{\Omega}_i^{t+1}$ from $\Omega_i^0$ before the next extraction stage and
+by regenerating active eligibility from epoch-local evidence. Model errors can
+still affect temporary evidence and active-set decisions in the current epoch,
+but they are not carried as persistent candidate membership, pseudo-target, or
+sample-promotion modifications.
+
+\subsection{Dual-View Model Prediction}
+For each sample, the data loader provides a weak and a strong augmented view.
+The weak view is used to construct the KNN feature graph because it preserves a
+cleaner local topology:
+\begin{equation}
+    \mathbf{z}_i = \frac{f_\theta(\mathbf{x}^{w}_i)}
+    {\|f_\theta(\mathbf{x}^{w}_i)\|_2}.
+\end{equation}
+The model belief is computed from both views and averaged:
+\begin{equation}
+    P_{\mathrm{model},i}
+    =
+    \frac{1}{2}
+    \left[
+    \sigma(h_\phi(f_\theta(\mathbf{x}^{w}_i)))+
+    \sigma(h_\phi(f_\theta(\mathbf{x}^{s}_i)))
+    \right].
+    \label{eq:dual_view_model}
+\end{equation}
+This ``separate model'' design makes the semantic signal less dependent on one
+augmentation path while keeping the geometric graph tied to the weak-view
+feature manifold.
+
+\subsection{Topology-DAES Supervision Extraction}
+\label{sec:daes}
+Given normalized features $\mathbf{z}_i$, NSE builds a single-head cosine
+$K$-nearest-neighbor graph. Topology-DAES is the supervision extraction kernel
+of NSE, where DAES denotes Dynamic Adaptive Entropy Similarity. It is not a
+generic KNN weighting trick: it determines how supervision is extracted from the
+epoch-wise restored weak prior.
+
+\paragraph{Masked-entropy topology reliability.}
+For a reference distribution $P$, let $S_{ij}$ be the cosine similarity between
+sample $i$ and neighbor $j\in\mathcal{N}_K(i)$. Before using a similarity as a
+linear vote weight, NSE clamps it to the non-negative range,
+$\bar{S}_{ij}=\max(S_{ij},0)$, so the resulting neighborhood vote remains a
+valid non-negative aggregation. NSE first computes a topology vote
+\begin{equation}
+\begin{aligned}
+    \alpha_{ij}
+    &=
+    \frac{\bar{S}_{ij}}{\sum_{j'\in\mathcal{N}_K(i)}\bar{S}_{ij'}+\epsilon},
+    \\
+    P^{\mathrm{top}}_i
+    &=
+    \operatorname{Norm}
+    \left(
+    \sum_{j\in\mathcal{N}_K(i)}\alpha_{ij}P_j
+    \right).
+\end{aligned}
+\end{equation}
+The topology vote is compared with the self weak prior
+\begin{equation}
+    P^{\mathrm{self}}_i=\operatorname{Norm}(P_i).
+\end{equation}
+If $M_i$ is numerically empty, the normalization uses $\epsilon$ smoothing and
+falls back to a high-entropy agreement score. We use masked entropy to measure
+local agreement:
+\begin{equation}
+    M_i=P^{\mathrm{top}}_i\odot P^{\mathrm{self}}_i,
+    \qquad
+    \tilde{M}_i=\operatorname{Norm}(M_i),
+\end{equation}
+\begin{equation}
+    s_i
+    =
+    -\frac{1}{\log C}
+    \sum_c
+    \tilde{M}_{ic}\log(\tilde{M}_{ic}+\epsilon),
+    \qquad
+    \rho_i=\exp(-\gamma s_i^2).
+    \label{eq:topology_reliability}
+\end{equation}
+If neighbor votes and the native weak prior concentrate on the same labels,
+$s_i$ is small and $\rho_i$ is high. If the neighborhood conflicts with the
+weak prior or spreads mass over many labels, $s_i$ increases and $\rho_i$
+decreases. This masked-entropy reliability is the only topology reliability
+mode used in NSE.
+
+\paragraph{Entropy-adaptive DAES temperature.}
+Topology reliability measures whether the local weak-label topology is
+trustworthy. NSE further uses DAES to adapt propagation sharpness to
+neighborhood uncertainty. For a reference distribution $P$, the spatially
+weighted neighborhood mean is
+\begin{equation}
+    \bar{P}_i =
+    \frac{\sum_{j\in\mathcal{N}_K(i)}
+    W^{\mathrm{sp}}_{ij}P_{\mathrm{ref},j}}
+    {\sum_{j\in\mathcal{N}_K(i)}W^{\mathrm{sp}}_{ij}},
+    \qquad
+    W^{\mathrm{sp}}_{ij}
+    =
+    \operatorname{softmax}_{j}
+    \left(\frac{S_{ij}}{\tau_{\mathrm{sp}}}\right).
+\end{equation}
+Its normalized entropy is
+\begin{equation}
+    H_i =
+    -\frac{1}{\log C}
+    \sum_{c=1}^{C}\bar{P}_{i,c}\log(\bar{P}_{i,c}+\epsilon).
+\end{equation}
+DAES then forms a sample-adaptive temperature
+\begin{equation}
+    \tau_i = \tau_0 + \lambda_H H_i^2,
+    \label{eq:daes_tau}
+\end{equation}
+so low-entropy neighborhoods receive sharper propagation and high-entropy
+neighborhoods receive flatter propagation.
+
+\paragraph{Topology-DAES propagation.}
+The final Topology-DAES edge score uses the reliability of the neighbor node:
+\begin{equation}
+    \tilde{S}_{ij}=\bar{S}_{ij}\rho_j.
+    \label{eq:neighbor_reliability_edge}
+\end{equation}
+Thus, a neighbor with unreliable weak-label topology contributes less evidence
+even if it is close in feature space. The entropy-adaptive propagation weight is
+\begin{equation}
+    W^{\mathrm{td}}_{ij} =
+    \exp\left(
+    \frac{\tilde{S}_{ij}^{p_{\mathrm{sim}}}}{\tau_i}
+    -
+    \max_{j'\in\mathcal{N}_K(i)}
+    \frac{\tilde{S}_{ij'}^{p_{\mathrm{sim}}}}{\tau_i}
+    \right).
+    \label{eq:daes_weight}
+\end{equation}
+We use $p_{\mathrm{sim}}=2$ in all reported experiments, matching the squared
+similarity score used by the implementation.
+The Topology-DAES belief is
+\begin{equation}
+    P^{\mathrm{td}}_i =
+    \operatorname{softmax}\left(
+    \sum_{j\in\mathcal{N}_K(i)} W^{\mathrm{td}}_{ij}P_j
+    \right).
+\end{equation}
+The same softmax normalization is used in both propagation passes; the
+alternative exponential-kernel ablation changes the edge score, not this
+normalization step.
+The first Topology-DAES pass uses the restored candidate/crowd prior as input and
+produces $P_{\mathrm{geo}}$. The second pass uses the fused graph--semantic
+evidence $P_{\mathrm{in}}^{(2)}$ as input and produces the final pseudo-label
+distribution for active-set training.
+
+\subsection{Progressive Model Warm-Up}
+The model branch is introduced gradually to avoid early self-confirmation. At
+epoch $t$, its maximum contribution is controlled by
+\begin{equation}
+    w_t =
+    \min\left(w_{\max},\frac{t}{T_{\mathrm{warm}}}\right),
+    \label{eq:model_warmup}
+\end{equation}
+where $T_{\mathrm{warm}}$ is the model warm-up length and $w_{\max}$ is the
+maximum model-evidence cap. The effective model belief is
+\begin{equation}
+    P^{\mathrm{eff}}_{\mathrm{model},i}
+    =
+    w_t P_{\mathrm{model},i}
+    +(1-w_t)P_{\mathrm{geo},i}.
+    \label{eq:model_effective}
+\end{equation}
+At the beginning of training, the model branch collapses to the graph belief;
+after warm-up, it contributes semantic evidence up to the specified cap.
+
+\subsection{Reliability-Aware Graph--Semantic Fusion}
+NSE uses a confidence-ratio reliability score. Let
+\begin{equation}
+    s_i^{\mathrm{geo}} = \max_c P_{\mathrm{geo},i,c},
+    \qquad
+    s_i^{\mathrm{model}} = \max_c P_{\mathrm{model},i,c}.
+\end{equation}
+The reliability assigned to the KNN belief is
+\begin{equation}
+    r_i =
+    \frac{s_i^{\mathrm{geo}}}
+    {s_i^{\mathrm{geo}}+s_i^{\mathrm{model}}+\epsilon}.
+    \label{eq:ri_confidence}
+\end{equation}
+Large $r_i$ means the geometric belief is sharper than the model belief; small
+$r_i$ allows the model belief to correct ambiguous neighborhoods.
+
+The external prior $\tilde{\Omega}_i^t$ is restored from the native
+weak-supervision constraint: candidate mask for synthetic NPLL data and crowd
+prior for real crowdsourced data. The model belief is first projected into this
+prior:
+\begin{equation}
+    \hat{P}_{\mathrm{model},i}
+    =
+    \operatorname{Norm}
+    \left(P^{\mathrm{eff}}_{\mathrm{model},i}\odot\tilde{\Omega}_i^t\right).
+    \label{eq:prior_effective}
+\end{equation}
+The second-stage propagation input is then Eq.~\eqref{eq:unified_fusion}. This
+is the unified graph--semantic evidence path used for CIFAR, CIFAR-100H,
+Benthic, Plankton, and Treeversity.
+
+\paragraph{Algorithmic advantages.}
+This fusion rule provides advantages that are not simultaneously present in
+existing NPLL designs. In contrast to refinement-based methods such as
+FREDIS~\cite{qiao2023fredis}, NSE does not carry an add/remove candidate-set
+state across epochs. In contrast to progressive purification~\cite{xu2022pop},
+reliable-set expansion in our method changes which samples are used for
+optimization in the current epoch, not the original candidate membership. In
+contrast to candidate-label reconstruction~\cite{peng2025noise}, NSE does not
+optimize on a reconstructed candidate set as the new working source; it extracts
+active supervision from a restored native prior. In contrast to
+detection-and-correction frameworks such as IRNet~\cite{lian2023irnet} and
+recursive separation~\cite{Shi2023Unreliable}, the method does not require a
+correction or promotion state to be carried forward. In contrast to
+prototype-contrastive disambiguation~\cite{wang2022pico,wang2022pico+}, the
+model branch is not the sole source of semantic correction; it must compete with
+the KNN belief through $r_i$ and the original prior through
+Eq.~\eqref{eq:prior_effective}. Compared with ALIM~\cite{xu2023alim}, which is
+closest to source preservation because it trades off the initial candidate set
+and model outputs, NSE performs topology-controlled extraction from the restored
+prior and updates only active training eligibility.
+
+\subsection{Recovering Candidate-Missing Samples}
+\label{sec:missing_label_recovery}
+NPLL differs from standard PLL because some samples have $y_i\notin Y_i^0$.
+NSE handles these samples by separating the role of the native prior in the
+model branch from the role of graph and consensus evidence. The prior projection
+in Eq.~\eqref{eq:prior_effective} constrains only the temporary model evidence:
+it prevents an early classifier prediction from directly writing an unsupported
+class into the working source. It does not erase non-candidate evidence already
+present in $P_{\mathrm{geo}}$, because $P_{\mathrm{geo}}$ is obtained by
+propagating neighbors' restored priors. Thus a candidate-missing sample can
+receive mass on its true class if nearby samples carry that class in their own
+native priors.
+
+Reliable-set admission remains conservative: the pseudo-label must be supported
+by the sample's candidate/crowd prior. Therefore, initially noisy samples whose
+true class is absent from $Y_i^0$ are not counted as source-level repairs. They
+are recovered through the salvage path when model, KNN, and prototype
+predictions become stable and agree over the temporal window. This is the
+intended distinction: NSE does not repair the native source membership, but it
+can still recover missing-label samples as epoch-local active supervision.
+
+\subsection{Second Propagation and Reliable Set Selection}
+The fused distribution $P^{(2)}_{\mathrm{in}}$ becomes the reference for the
+second Topology-DAES propagation:
+\begin{equation}
+    P^{(2)}_i =
+    \operatorname{softmax}
+    \left(
+    \sum_{j\in\mathcal{N}_K(i)}
+    W^{(2)}_{ij}P^{(2)}_{\mathrm{in},j}
+    \right).
+    \label{eq:stage2}
+\end{equation}
+The final pseudo-label is
+\begin{equation}
+    \hat{y}_i = \arg\max_c P^{(2)}_{i,c}.
+\end{equation}
+A sample is placed into the reliable set if the pseudo-label is supported by
+the candidate/crowd prior and its confidence passes the quantile threshold
+controlled by $\delta$. Concretely, within each predicted class we keep the
+highest-confidence fraction determined by the class-count quantile
+$\delta$, which avoids letting large classes dominate the reliable set. This
+preserves the two-pass reliable selection structure while replacing
+branch-specific refinement with a single restored-prior extraction rule.
+
+\subsection{Recoverability Intuition}
+The KNN stage can provide useful supervision only when the propagated true-label
+mass is larger than the strongest ambiguous-label mass. Let
+\begin{equation}
+    S_i(c)=\sum_{j\in\mathcal{N}_K(i)} w_{ij}P^{(0)}_j(c),
+    \qquad
+    \sum_{j}w_{ij}=1,\quad w_{ij}\ge 0
+\end{equation}
+be the neighborhood vote for class $c$ before normalization. If the true label
+of sample $i$ is $y_i$, define the KNN supervision margin
+\begin{equation}
+    \Delta_i =
+    S_i(y_i) - \max_{c\ne y_i} S_i(c).
+    \label{eq:knn_margin}
+\end{equation}
+A KNN pseudo-label is correct whenever $\Delta_i>0$. In NPLL, noisy candidate
+sets reduce $S_i(y_i)$ when the true label is absent and increase the competing
+ambiguous-label scores. Therefore, the central question is whether neighbor
+aggregation restores a positive margin.
+
+This margin also gives an intuition for reliable supervision. The following
+calculation is not a full guarantee for the adaptive training dynamics; it is
+made under simplifying assumptions, conditioned on the learned representation
+and graph, and treats neighbor votes as bounded random variables. For any
+competing class $c\ne y_i$, let
+\begin{equation}
+    D_{i,c}=\sum_{j\in\mathcal{N}_K(i)}
+    w_{ij}\left[P^{(0)}_j(y_i)-P^{(0)}_j(c)\right],
+    \qquad
+    m_{i,c}=\mathbb{E}[D_{i,c}].
+\end{equation}
+Since each summand is bounded in $[-w_{ij},w_{ij}]$, Hoeffding's inequality
+gives the illustrative bound
+\begin{equation}
+    \Pr(D_{i,c}\le 0)
+    \le
+    \exp\left(
+    -\frac{m_{i,c}^{2}}{2\sum_j w_{ij}^{2}}
+    \right).
+    \label{eq:knn_pair_error}
+\end{equation}
+By a union bound over all wrong classes,
+\begin{equation}
+    \Pr(\hat{y}^{\mathrm{knn}}_i\ne y_i)
+    \le
+    \sum_{c\ne y_i}
+    \exp\left(
+    -\frac{m_{i,c}^{2}}{2\sum_j w_{ij}^{2}}
+    \right).
+    \label{eq:knn_error_bound}
+\end{equation}
+For uniform neighbors, $\sum_jw_{ij}^2=1/K$, so the error bound decreases with
+larger neighbor count and larger true-label margin. For adaptive weights, the
+term $(\sum_jw_{ij}^2)^{-1}$ acts as an effective neighbor count. Topology-DAES
+is therefore useful when it increases the effective margin by sharpening
+consistent neighborhoods and avoiding over-confident propagation in ambiguous
+neighborhoods.
+
+Similarly, if the active training set has pseudo-label error rate
+$\varepsilon_{\mathrm{act}}$, then a bounded loss $\ell\in[0,B]$ satisfies the
+standard-style decomposition
+\begin{equation}
+    R(h)
+    \le
+    \hat{R}_{\mathrm{act}}(h)
+    + 2\mathfrak{R}_{n_{\mathrm{act}}}(\mathcal{H})
+    + B\sqrt{\frac{\log(1/\delta_{\mathrm{conf}})}{2n_{\mathrm{act}}}}
+    + B\varepsilon_{\mathrm{act}},
+    \label{eq:active_bound}
+\end{equation}
+with probability at least $1-\delta_{\mathrm{conf}}$. Eq.~\eqref{eq:knn_error_bound} connects
+the KNN propagation margin to $\varepsilon_{\mathrm{act}}$, and
+$\mathfrak{R}_{n_{\mathrm{act}}}(\mathcal{H})$ denotes the empirical
+Rademacher complexity of the hypothesis class on the active set. This
+standard-style expression is used only as intuition: better neighbor
+aggregation reduces pseudo-label errors in the active set, which reduces the
+noise term in the downstream decomposition.
+
+This bound also clarifies the design philosophy. Improving NPLL performance
+does not require cross-epoch inheritance of model-induced supervision state; it
+requires reducing the error rate of the extracted active supervision
+$\varepsilon_{\mathrm{act}}$. Persistent candidate-set or pseudo-target updates
+attempt to reduce $\varepsilon_{\mathrm{act}}$ by carrying model-induced
+supervision states forward, while NSE reduces it by improving the extraction
+path from the restored native source $\Omega_i^0$.
+
+\subsection{Prototype and Consensus Salvage}
+NSE maintains class prototypes with exponential moving average. If
+$\mathcal{R}_{t,c}$ is the reliable subset assigned to class $c$ at epoch $t$,
+the class prototype is updated as
+\begin{equation}
+    \mu_c^t
+    =
+    \beta \mu_c^{t-1}
+    +(1-\beta)
+    \frac{1}{|\mathcal{R}_{t,c}|}
+    \sum_{i\in\mathcal{R}_{t,c}}\mathbf{z}_i,
+    \label{eq:proto_ema}
+\end{equation}
+when $\mathcal{R}_{t,c}$ is non-empty, followed by $\ell_2$ normalization.
+Prototype predictions are compared with model and KNN predictions over the
+unreliable pool:
+\begin{equation}
+    \hat{y}^{\mathrm{model}}_i,\quad
+    \hat{y}^{\mathrm{knn}}_i,\quad
+    \hat{y}^{\mathrm{proto}}_i.
+\end{equation}
+Let $L_{\mathrm{hist}}$ be the history length and
+$\mathbf{a}_{i,\tau}=(\hat{y}^{m}_{i,\tau},\hat{y}^{k}_{i,\tau},\hat{y}^{p}_{i,\tau})$
+denote the model, KNN, and prototype hard predictions. A sample enters the
+salvage set if it is not in the reliable set for all epochs in the window and
+the three predictions are valid, stable, and equal throughout the window:
+\begin{equation}
+\begin{aligned}
+    i\in S_t \Longleftrightarrow
+    \begin{cases}
+    i\notin R_\tau,\\
+    \mathbf{a}_{i,\tau}=(\hat{y}^{S}_{i},\hat{y}^{S}_{i},\hat{y}^{S}_{i}),
+    \end{cases}
+    \quad
+    \forall \tau\in[t-L_{\mathrm{hist}}+1,t].
+\end{aligned}
+\label{eq:salvage_rule}
+\end{equation}
+This temporal queue is inspired by CroSel's memory-bank selection idea, which
+uses FIFO historical predictions to identify stable candidate-supported
+pseudo-labels in standard PLL \cite{tian2024crosel}. NSE adapts this idea to
+NPLL by requiring model--KNN--prototype agreement and by using the selected
+samples only as epoch-local active supervision, without writing the salvaged
+label into the native candidate/crowd source. EMA teacher predictions are not
+used in this consensus rule.
+
+\subsection{Active-Set Training Objective}
+Training uses one unified data loader, but each epoch assigns nonzero sampling
+weight only to active samples. The active set is the union of the reliable set
+selected by the second propagation and a salvage set recovered by stable
+model--KNN--prototype consensus. Samples that are neither reliable nor salvaged
+are retained in the index space for bookkeeping, but their sampling weight is
+zero and they do not contribute to the training loss.
+
+The salvage set is therefore a training-set decision rather than a
+candidate-set update. A salvaged sample can provide supervision in the current
+epoch when model, KNN, and prototype predictions agree persistently, but its
+native candidate mask or crowd prior is restored again before the next epoch's
+extraction. This differs from candidate purification and reconstruction
+strategies that carry add/remove or reconstructed candidate states forward. The
+design preserves the native source record and avoids persistent sample-promotion
+state while still allowing recoverable samples to contribute to optimization
+through epoch-local active supervision.
+
+Active samples use weak and strong augmented MixUp supervision. For an active
+sample with pseudo-label $\hat{y}_i$, the smoothed target is
+\begin{equation}
+    \tilde{\mathbf{y}}_i =
+    (1-\epsilon_{\mathrm{ls}})\mathbf{e}_{\hat{y}_i}
+    + \frac{\epsilon_{\mathrm{ls}}}{C}\mathbf{1}.
+\end{equation}
+MixUp draws $\lambda\sim\operatorname{Beta}(\alpha_{\mathrm{mix}},\alpha_{\mathrm{mix}})$ and optimizes
+\begin{equation}
+    \mathcal{L}_{\mathrm{sup}}
+    =
+    \frac{1}{2}
+    \left[
+    \operatorname{CE}(\tilde{\mathbf{x}}^w,\tilde{\mathbf{y}})
+    +
+    \operatorname{CE}(\tilde{\mathbf{x}}^s,\tilde{\mathbf{y}})
+    \right].
+\end{equation}
+
+The total objective used by the current experiments is therefore
+\begin{equation}
+    \mathcal{L}
+    =
+    \mathcal{L}_{\mathrm{active}},
+    \label{eq:total_loss}
+\end{equation}
+where $\mathcal{L}_{\mathrm{active}}$ has the same weak/strong MixUp form as
+$\mathcal{L}_{\mathrm{sup}}$ above. This objective is intentionally conservative:
+ordinary non-reliable samples are not forced into the loss. They can affect
+training only after they become reliable or are recovered by stable
+model--KNN--prototype consensus.
+
+\subsection{Optimization}
+The implementation optimizes the encoder and classifier jointly using SGD with
+momentum. CIFAR-style experiments use ResNet-18 and cosine scheduling by
+default, while crowdsourced datasets use ResNet-50 with step decay and
+ImageNet-pretrained initialization. Unless otherwise specified, we use label
+smoothing $\epsilon_{\mathrm{ls}}=0$, history length $L_{\mathrm{hist}}=15$, and
+Topology-DAES in both propagation passes.
+
+% ================== Chapter 3 Methodology End ==================

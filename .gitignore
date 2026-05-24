@@ -1,0 +1,46 @@
+*.aux
+*.bbl
+*.blg
+*.brf
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.pdf
+*.synctex.gz
+*.toc
+*.lot
+*.lof
+
+# Data, Checkpoints and Logs
+out_*/
+*.zip
+*.tar.gz
+*.pth
+*.pt
+CIFAR100/
+CIFAR100H/
+crowd*/
+logs/*
+!logs/**/*.md
+
+# IDE and Python
+.vscode/
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.env
+
+# Agent internal
+.agent/
+.agents/
+
+# 旧脚本归档目录 - 不纳入版本控制 / Archived legacy scripts - excluded from version control
+旧脚本/
+ablation_scripts/
+scripts/experiments/*
+!scripts/experiments/**/*.md
+configs/*
+!configs/**/*.md
+!configs/**/*.yaml

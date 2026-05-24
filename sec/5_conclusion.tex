@@ -1,0 +1,14 @@
+\section{Conclusion}
+\label{sec:conclusion}
+
+In this paper, we introduced NSE, a Non-Destructive Supervision Extraction framework for Noisy Partial Label Learning (NPLL). NSE shows that high-performance NPLL can be achieved without cross-epoch persistent source write-back. The key is not to leave weak supervision unprocessed, but to restore the native candidate/crowd prior at the beginning of each epoch and extract reliable active supervision from the restored working prior.
+
+Topology-DAES is the core extraction module of NSE. By combining masked-entropy topology reliability with entropy-adaptive KNN propagation, it suppresses ambiguous neighborhoods and strengthens consistent weak-label neighborhoods. Prior-constrained model evidence and active-set training are then built on top of this topology-aware geometric belief. These results suggest that the future direction of NPLL should not be limited to candidate-set purification, reconstruction, or persistent pseudo-target carry-over. A complementary and effective direction is to decouple the native weak-supervision record from the epoch-local working supervision and improve how temporary active supervision is extracted from it.
+
+NSE still depends on the quality of the learned representation and the semantic
+purity of local neighborhoods. When neighborhoods are strongly mixed or the
+crowd/candidate prior provides little recoverable structure, epoch-wise
+restoration alone cannot guarantee reliable extraction. This limitation makes
+active-set precision, coverage, and source-drift diagnostics important parts of
+evaluating future NPLL methods.
+

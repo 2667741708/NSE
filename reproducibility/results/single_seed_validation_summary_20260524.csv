@@ -1,0 +1,8 @@
+track,condition,seed,single_seed_best_acc,single_seed_final_acc,paper_three_seed_final,status,master_log
+component_ablation,A0_full_seed1,1,79.72,79.33,79.22 +/- 0.14,completed,reproducibility/results/single_seed_validation_20260523/component/A0_full_seed1/master_log.txt
+main_results,CIFAR100_pr005_nr03_seed1,1,79.72,79.33,79.22 +/- 0.14,completed,reproducibility/results/single_seed_validation_20260523/main/CIFAR100_pr005_nr03_seed1/master_log.txt
+persistent_state_v2,FREDIS_V2_PSS_seed1,1,78.55,78.16,78.10 +/- 0.20,completed,reproducibility/results/single_seed_validation_20260523/pss/FREDIS_V2_PSS_seed1/master_log.txt
+persistent_state_v2,IRNet_V2_PSS_seed1,1,77.86,77.67,78.04 +/- 0.27,completed,reproducibility/results/single_seed_validation_20260523/pss/IRNet_V2_PSS_seed1/master_log.txt
+persistent_state_v2,PALS_SARI_V2_PSS_seed1,1,79.17,79.17,78.84 +/- 0.32,completed,reproducibility/results/single_seed_validation_20260523/pss/PALS_SARI_V2_PSS_seed1/master_log.txt
+persistent_state_v2,UPLLRS_V2_PSS_seed1,1,78.82,78.69,78.51 +/- 0.12,completed,reproducibility/results/single_seed_validation_20260523/pss/UPLLRS_V2_PSS_seed1/master_log.txt
+persistent_state_v2,PiCOPlus_V2_PSS_seed1,1,59.91,59.57,59.68 +/- 0.65,completed,reproducibility/results/single_seed_validation_20260523/pss/PiCOPlus_V2_PSS_seed1/master_log.txt
