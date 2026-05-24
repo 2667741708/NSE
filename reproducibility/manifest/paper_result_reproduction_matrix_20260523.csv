@@ -1,0 +1,47 @@
+paper_table,result_id,row_owner,dataset,setting,paper_value,stable_script_family,single_seed_validation_status,command_group
+Table_cifar,NSE_C10_q010_eta01,NSE,CIFAR10,"q=0.1 eta=0.1","96.72 +/- 0.11",main_results,queued_in_full_matrix,main_synthetic_cifar10
+Table_cifar,NSE_C10_q010_eta02,NSE,CIFAR10,"q=0.1 eta=0.2","96.58 +/- 0.05",main_results,queued_in_full_matrix,main_synthetic_cifar10
+Table_cifar,NSE_C10_q010_eta03,NSE,CIFAR10,"q=0.1 eta=0.3","96.71 +/- 0.07",main_results,queued_in_full_matrix,main_synthetic_cifar10
+Table_cifar,NSE_C10_q030_eta01,NSE,CIFAR10,"q=0.3 eta=0.1","96.33 +/- 0.08",main_results,queued_in_full_matrix,main_synthetic_cifar10
+Table_cifar,NSE_C10_q030_eta02,NSE,CIFAR10,"q=0.3 eta=0.2","96.19 +/- 0.12",main_results,queued_in_full_matrix,main_synthetic_cifar10
+Table_cifar,NSE_C10_q030_eta03,NSE,CIFAR10,"q=0.3 eta=0.3","96.03 +/- 0.08",main_results,queued_in_full_matrix,main_synthetic_cifar10
+Table_cifar,NSE_C10_q050_eta01,NSE,CIFAR10,"q=0.5 eta=0.1","95.93 +/- 0.19",main_results,queued_in_full_matrix,main_synthetic_cifar10
+Table_cifar,NSE_C10_q050_eta02,NSE,CIFAR10,"q=0.5 eta=0.2","95.19 +/- 0.13",main_results,queued_in_full_matrix,main_synthetic_cifar10
+Table_cifar,NSE_C10_q050_eta03,NSE,CIFAR10,"q=0.5 eta=0.3","94.82 +/- 0.04",main_results,queued_in_full_matrix,main_synthetic_cifar10
+Table_cifar,NSE_C100_q001_eta01,NSE,CIFAR100,"q=0.01 eta=0.1","81.62 +/- 0.09",main_results,queued_in_full_matrix,main_synthetic_cifar100
+Table_cifar,NSE_C100_q001_eta02,NSE,CIFAR100,"q=0.01 eta=0.2","81.34 +/- 0.17",main_results,queued_in_full_matrix,main_synthetic_cifar100
+Table_cifar,NSE_C100_q001_eta03,NSE,CIFAR100,"q=0.01 eta=0.3","80.76 +/- 0.34",main_results,queued_in_full_matrix,main_synthetic_cifar100
+Table_cifar,NSE_C100_q003_eta01,NSE,CIFAR100,"q=0.03 eta=0.1","81.10 +/- 0.11",main_results,queued_in_full_matrix,main_synthetic_cifar100
+Table_cifar,NSE_C100_q003_eta02,NSE,CIFAR100,"q=0.03 eta=0.2","80.44 +/- 0.19",main_results,queued_in_full_matrix,main_synthetic_cifar100
+Table_cifar,NSE_C100_q003_eta03,NSE,CIFAR100,"q=0.03 eta=0.3","79.47 +/- 0.06",main_results,queued_in_full_matrix,main_synthetic_cifar100
+Table_cifar,NSE_C100_q005_eta01,NSE,CIFAR100,"q=0.05 eta=0.1","80.32 +/- 0.47",main_results,queued_in_full_matrix,main_synthetic_cifar100
+Table_cifar,NSE_C100_q005_eta02,NSE,CIFAR100,"q=0.05 eta=0.2","80.05 +/- 0.20",main_results,queued_in_full_matrix,main_synthetic_cifar100
+Table_cifar,NSE_C100_q005_eta03,NSE,CIFAR100,"q=0.05 eta=0.3","79.22 +/- 0.14",main_results,completed_representative_seed1,main_cifar100_pr005_nr03
+Table_extreme_noise,NSE_C100_q005_eta04,NSE,CIFAR100,"q=0.05 eta=0.4","78.04 +/- 0.06",main_results,queued_in_full_matrix,main_synthetic_cifar100_extreme
+Table_extreme_noise,NSE_C100_q005_eta05,NSE,CIFAR100,"q=0.05 eta=0.5","76.69 +/- 0.46",main_results,queued_in_full_matrix,main_synthetic_cifar100_extreme
+Table_no_noise,NSE_C100_q001_eta00,NSE,CIFAR100,"q=0.01 eta=0.0","82.25 +/- 0.12",main_results,queued_in_full_matrix,main_synthetic_cifar100_no_noise
+Table_no_noise,NSE_C100_q005_eta00,NSE,CIFAR100,"q=0.05 eta=0.0","81.27 +/- 0.16",main_results,queued_in_full_matrix,main_synthetic_cifar100_no_noise
+Table_no_noise,NSE_C100_q010_eta00,NSE,CIFAR100,"q=0.1 eta=0.0","80.79 +/- 0.20",main_results,queued_in_full_matrix,main_synthetic_cifar100_no_noise
+Table_cifar100h,NSE_C100H_q050_eta02,NSE,CIFAR100H,"q=0.5 eta=0.2","76.54 +/- 0.18",main_results,queued_in_full_matrix,main_cifar100h
+Table_crowd,NSE_Treeversity_10annot,NSE,Treeversity,"LPI=10","83.76 +/- 0.50",main_results,queued_in_full_matrix,crowdsourced
+Table_crowd,NSE_Benthic_10annot,NSE,Benthic,"LPI=10","77.24 +/- 0.32",main_results,queued_in_full_matrix,crowdsourced
+Table_crowd,NSE_Plankton_10annot,NSE,Plankton,"LPI=10","92.68 +/- 0.14",main_results,queued_in_full_matrix,crowdsourced
+Table_crowd,NSE_Treeversity_3annot,NSE,Treeversity,"LPI=3","83.77 +/- 0.97",main_results,queued_in_full_matrix,crowdsourced
+Table_crowd,NSE_Benthic_3annot,NSE,Benthic,"LPI=3","76.82 +/- 0.42",main_results,queued_in_full_matrix,crowdsourced
+Table_crowd,NSE_Plankton_3annot,NSE,Plankton,"LPI=3","92.76 +/- 0.14",main_results,queued_in_full_matrix,crowdsourced
+Table_component_ablation,A0_full,NSE,CIFAR100,"q=0.05 eta=0.3","79.22 +/- 0.14",component_ablation,completed_representative_seed1,component_a0
+Table_component_ablation,A1_topology_daes_to_exp_both,NSE,CIFAR100,"q=0.05 eta=0.3","76.50 +/- 0.20",component_ablation,queued_in_full_matrix,component_a1
+Table_component_ablation,A2_stage2_exp,NSE,CIFAR100,"q=0.05 eta=0.3","78.56 +/- 0.05",component_ablation,queued_in_full_matrix,component_a2
+Table_component_ablation,A3_stage1_exp,NSE,CIFAR100,"q=0.05 eta=0.3","76.51 +/- 0.12",component_ablation,queued_in_full_matrix,component_a3
+Table_component_ablation,A4_uniform_ri,NSE,CIFAR100,"q=0.05 eta=0.3","79.14 +/- 0.11",component_ablation,queued_in_full_matrix,component_a4
+Table_component_ablation,A5_no_candidate_prior_projection,NSE,CIFAR100,"q=0.05 eta=0.3","78.17 +/- 0.06",component_ablation,queued_in_full_matrix,component_a5
+Table_component_ablation,A6_knn_only,NSE,CIFAR100,"q=0.05 eta=0.3","78.99 +/- 0.04",component_ablation,queued_in_full_matrix,component_a6
+Table_component_ablation,A7_maxw10,NSE,CIFAR100,"q=0.05 eta=0.3","79.13 +/- 0.13",component_ablation,queued_in_full_matrix,component_a7
+Table_component_ablation,A8_no_salvage_training,NSE,CIFAR100,"q=0.05 eta=0.3","78.67 +/- 0.29",component_ablation,queued_in_full_matrix,component_a8
+Table_pss,NSE_Reset,NSE,CIFAR100,"q=0.05 eta=0.3","79.38 +/- 0.16",persistent_state,queued_in_full_matrix,pss_reset
+Table_pss,FREDIS_V2_PSS,NSE,CIFAR100,"q=0.05 eta=0.3","78.10 +/- 0.20",persistent_state,completed_representative_seed1,pss_fredis
+Table_pss,IRNet_V2_PSS,NSE,CIFAR100,"q=0.05 eta=0.3","78.04 +/- 0.27",persistent_state,completed_representative_seed1,pss_irnet
+Table_pss,PALS_SARI_V2_PSS,NSE,CIFAR100,"q=0.05 eta=0.3","78.84 +/- 0.32",persistent_state,completed_representative_seed1,pss_pals_sari
+Table_pss,UPLLRS_V2_PSS,NSE,CIFAR100,"q=0.05 eta=0.3","78.51 +/- 0.12",persistent_state,completed_representative_seed1,pss_upllrs
+Table_pss,PiCOPlus_V2_PSS,NSE,CIFAR100,"q=0.05 eta=0.3","59.68 +/- 0.65",persistent_state,completed_representative_seed1,pss_picoplus
+All_tables,third_party_baselines,external,CIFAR/crowd,"PALS-reported baseline rows","see main.pdf",literature_provenance,not_rerun_by_nse_scripts,reference_audit

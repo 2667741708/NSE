@@ -1,0 +1,18 @@
+项目名称：Reliability-Aware Bayesian Dual-View Fusion for Noisy Partial Label Learning
+
+当前主脚本：
+`bayes_unified_融合可靠_自适应R_i_双视图模型预测_分开model.py`
+
+该项目当前对应的算法不再是 CE-Leak / 单侧泄漏先验版本，而是统一的可靠性感知贝叶斯证据融合版本。核心逻辑为：第一阶段通过 DAES-KNN 从候选标签或众包先验中得到几何软分布 `P_knn`；模型端同时使用弱增强与强增强两种视图，取平均得到 `P_model`；随后以 `w_model = min(max_w_model, epoch / model_warmup_epochs)` 渐进引入模型预测，并通过
+
+`r_i = conf(P_knn) / (conf(P_knn) + conf(P_model) + eps)`
+
+计算逐样本可靠度。第二阶段传播输入为
+
+`prior_effective = normalize(P_model_effective * omega)`
+
+`propagation_input_2 = normalize(r_i * P_knn + (1 - r_i) * prior_effective)`
+
+其中 `omega` 是数据集先验：标准 NPLL 数据集使用候选标签 mask，真实众包数据集使用 crowd prior。该公式替代旧版按数据集分支处理的 refine stage，使 CIFAR、CIFAR100H、CUB200、Benthic、Plankton、Treeversity 都进入同一条统一贝叶斯融合路径。
+
+训练阶段继续保留可靠集与非可靠集的统一单流训练。可靠样本使用弱/强双视图 MixUp + label smoothing 监督；非可靠样本不再硬丢弃，而是使用模型软分布经再平衡后的目标，并结合 SoftMatch 权重与模型-KNN共识权重参与一致性训练。项目论文标题、摘要、方法章节与结论已按该脚本逻辑更新。

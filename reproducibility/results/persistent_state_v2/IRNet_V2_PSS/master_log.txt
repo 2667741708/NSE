@@ -1,0 +1,22 @@
+2026-05-22 06:06:56 - [INFO] - ========================= Starting Experiment Series =========================
+2026-05-22 06:06:56 - [INFO] - Base Settings: {'exp_name': 'IRNet_V2_PSS', 'dataset': 'CIFAR100', 'train_root': '/home/c201/公共/whm/PALS-SOFT/自适应LSR草稿_v3ref_only_20260409/data', 'out': '/home/c201/公共/whm/PALS-SOFT/双视图单视图实验结果/results/nse_persistent_state_v2_20260521', 'seeds': [1, 2, 3], 'num_workers': 4, 'cuda_dev': 0, 'pr': 0.05, 'nr': 0.3, 'lpi': 10, 'slice': 1, 'reliable_selection_mode': 'pals', 'network': 'R18', 'epochs': 500, 'batch_size': 256, 'lr': 0.1, 'wd': 0.001, 'momentum': 0.9, 'lr_scheduler': 'cosine', 'lr_decay_epochs': [60, 120, 160, 200], 'lr_decay_rate': 0.2, 'mixup_alpha': 1.0, 'lsr': 0.0, 'ablate_no_reliable_mixup': False, 'no_rebalance': False, 'k_val': 15, 'delta': 0.25, 'history_len': 15, 'sim_mode_1': 'topology_daes', 'sim_mode_2': 'topology_daes', 'topology_rel_mode': 'masked_entropy', 'topology_rel_gamma': 2.0, 'topology_rel_eps': 1e-12, 'daes_entropy_coeff': 0.5, 'detailed_log': False, 'knn_heads': 1, 'adap_rel_eps': 1e-12, 'ablate_uniform_ri': False, 'ablate_no_candidate_prior': False, 'ablate_no_salvage_training': False, 'model_warmup_epochs': 20, 'max_w_model': 0.5, 'model_belief_view': 'weak_strong_avg', 'source_update_mode': 'irnet_correct', 'source_update_evidence': 'p2', 'source_update_scope': 'all', 'source_update_threshold': 0.65, 'source_update_schedule': 'fixed', 'source_update_threshold_start': 0.95, 'source_update_threshold_end': 0.85, 'source_update_alpha': 0.3, 'source_update_start_epoch': -1, 'source_remove_threshold': 0.05, 'source_insert_margin': 0.0, 'fredis_refine_threshold': 0.01, 'fredis_disamb_threshold': 0.8, 'fredis_refine_min_conf': 0.0, 'fredis_disamb_max_conf': 1.0, 'fredis_top_non_candidate_only': False, 'fredis_min_disamb_over_refine': 1.0, 'irnet_tau_boundary': 0.0, 'irnet_min_non_candidate_conf': 0.85, 'pico_candidate_constrained': False, 'source_reconstruct_k': 5, 'source_reset_interval': 0, 'persistent_promotion_mode': 'none', 'promotion_scope': 'none', 'promotion_threshold': 0.95, 'promotion_source': 'p2', 'promotion_label_space': 'all'}
+================================================================================
+2026-05-22 06:06:56 - [INFO] - --- Starting Run 1/3 with Seed: 1 ---
+2026-05-22 08:35:49 - [INFO] - --- Run 1 Finished. Duration: 148.88 min | Best Acc: 77.86% | Final Acc: 77.67% ---
+
+2026-05-22 08:35:49 - [INFO] - --- Starting Run 2/3 with Seed: 2 ---
+2026-05-22 11:04:30 - [INFO] - --- Run 2 Finished. Duration: 148.68 min | Best Acc: 78.22% | Final Acc: 78.15% ---
+
+2026-05-22 11:04:30 - [INFO] - --- Starting Run 3/3 with Seed: 3 ---
+2026-05-22 13:32:01 - [INFO] - --- Run 3 Finished. Duration: 147.52 min | Best Acc: 78.69% | Final Acc: 78.31% ---
+
+2026-05-22 13:32:01 - [INFO] - ========================= FINAL SUMMARY =========================
+2026-05-22 13:32:01 - [INFO] - Experiment Name: IRNet_V2_PSS
+
+2026-05-22 13:32:01 - [INFO] - Average Run Duration: 148.36 min
+
+2026-05-22 13:32:01 - [INFO] - Individual Best Accuracies: ['77.86%', '78.22%', '78.69%']
+2026-05-22 13:32:01 - [INFO] - Individual Final Epoch Accuracies: ['77.67%', '78.15%', '78.31%']
+2026-05-22 13:32:01 - [INFO] - --> Final Reported (Best Acc): 78.26% ± 0.34%
+2026-05-22 13:32:01 - [INFO] - --> Final Reported (Final Epoch Acc): 78.04% ± 0.27%
+2026-05-22 13:32:01 - [INFO] - ================================================================================

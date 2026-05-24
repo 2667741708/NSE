@@ -1,0 +1,152 @@
+\section{Related Work} \label{sec:related_work}
+
+Our work is situated at the intersection of weakly supervised learning, label
+noise robustness, and graph-based evidence aggregation. We group prior work by
+the way it uses the observed candidate labels.
+
+\subsection{Standard and Instance-Dependent PLL}
+Partial Label Learning (PLL) centers on label disambiguation: identifying the
+unique ground-truth label concealed within a set of candidate labels. Early
+work formalized learning from ambiguously labeled images, where each instance is
+associated with a candidate label set containing one correct label
+\cite{cour2009learning}. Cour et al. introduced the ambiguity degree to analyze
+when ambiguous supervision can control true classification error up to an
+ambiguity-dependent factor, and proposed a convex surrogate loss for ambiguous
+multiclass classification. Later PLL studies explored instance-based
+propagation \cite{zhang2015solving}, maximum-margin formulations
+\cite{yu2016maximum}, risk-consistent objectives \cite{feng2020provably}, and
+weighted losses \cite{wen2021leveraged}. PRODEN progressively identifies true
+labels by jointly updating the model and the candidate-supported label
+confidence \cite{lv2020progressive}. Deep PLL methods further combine
+representation learning with disambiguation, including CRDPLL-style consistency
+regularization \cite{wu2022revisiting}. CroSel uses a FIFO memory bank of
+historical model predictions and cross selection between two networks to select
+confident candidate-supported pseudo-labels \cite{tian2024crosel}. These
+methods usually assume that the
+true label is contained in the candidate set. Many standard PLL losses keep the
+observed candidate membership fixed and use it through the loss, risk
+estimator, label weights, or current soft targets rather than rewriting the
+candidate source. This early perspective is important for our work: the
+observed candidate set is not supervision-free noise, but a weak supervisory
+object whose usefulness depends on the ambiguity structure. NSE extends this
+view to noisy partial labels by extracting epoch-local active supervision from
+the restored native prior, rather than persistently rewriting the candidate
+source.
+
+Instance-dependent PLL relaxes the random-noise view of candidate generation.
+VALEN associates each instance with a latent label distribution and recovers the
+distribution through variational label enhancement \cite{xu2021idpll}. IDGP
+further decomposes instance-dependent candidate generation into two sequential
+parts: the correct label is generated first, and feature-related incorrect
+labels are then selected because of annotation uncertainty \cite{qiao2023idgp}.
+POP progressively updates the learning model and purifies candidate label sets,
+with the goal of expanding the reliable region \cite{xu2022pop}. These works
+show that candidate quality is sample-dependent and that the observed candidate
+set can encode structured annotation information. Their main operation is still
+candidate-set disambiguation or purification, whereas our method uses this
+observation to motivate preserving the native candidate/crowd prior as a
+constraint on later evidence fusion.
+
+\subsection{Noisy PLL and Persistent Supervision State}
+Noisy Partial Label Learning (NPLL) is more difficult because the true label may
+be absent from the observed candidate set. PiCO \cite{wang2022pico} and PiCO+
+\cite{wang2022pico+} use prototype-based contrastive learning and robust sample
+selection to improve deep PLL under ambiguity and noise. IRNet
+\cite{lian2023irnet} detects noisy samples and performs label correction.
+UPLLRS \cite{Shi2023Unreliable} recursively separates reliable and unreliable
+samples. FREDIS \cite{qiao2023fredis} explicitly combines disambiguation and
+refinement by moving incorrect labels out of the candidate set and moving
+predicted labels into it. Recent NPLL reconstruction work also separates noisy
+samples and reconstructs candidate labels when the true label is missing
+\cite{peng2025noise}. ALIM \cite{xu2023alim} reduces the impact of detection
+errors by adjusting the importance of the initial candidate set and model
+outputs.
+
+These methods provide strong baselines, but they expose a design tension that
+cannot be reduced to a single ``source rewrite'' category. Standard PLL usually
+assumes the true label is already inside the candidate set; many methods
+therefore disambiguate a fixed PL source through losses, risk estimators, label
+weights, or current candidate-supported soft targets. NPLL breaks this
+assumption because the true label may be absent, so recent methods more often
+need correction, refinement, promotion, augmentation, or pseudo-target recovery.
+Existing methods differ in where model-induced supervision is stored. Some
+methods preserve candidate membership and modify only the loss, risk estimate,
+or current label-importance weights; ALIM is a close NPLL example because it
+trades off the initial candidate set and model outputs without a hard candidate
+rewrite. Some methods maintain soft pseudo-target, label-confidence, or
+label-distribution states, such as PRODEN, LWS, PiCO, and VALEN. Others modify
+or reconstruct candidate membership, as in POP, FREDIS, IRNet, NPLL
+reconstruction, and partial-label augmentation in PALS-style training. UPLLRS
+instead carries reliable/unreliable sample-state information. Thus, the relevant
+distinction is not whether a method uses model-induced supervision; most strong
+methods do. The key question is whether that supervision is carried into later
+epochs as a \emph{persistent supervision state}: candidate membership,
+reconstructed candidate sets, pseudo-targets, label-importance weights, or
+sample-reliability state. When noisy-sample detection or pseudo-label prediction
+is wrong, such carry-over can preserve the error through later training. This
+motivates an alternative: restore the working prior from the native
+weak-supervision record at the beginning of each epoch and use model predictions
+only as temporary extraction evidence.
+
+\begin{table*}[t]
+\centering
+\scriptsize
+\setlength{\tabcolsep}{2pt}
+\begin{tabular}{p{0.10\textwidth}p{0.15\textwidth}p{0.19\textwidth}p{0.12\textwidth}p{0.22\textwidth}p{0.16\textwidth}}
+\toprule
+\textbf{Method} & \textbf{Supervision state} & \textbf{Representative update} & \textbf{Carry-over} & \textbf{Potential limitation under carry-over} & \textbf{NSE distinction} \\
+\midrule
+PRODEN / LWS~\cite{lv2020progressive,wen2021leveraged} & label-confidence / label-weight state & update candidate-supported confidence or weights while keeping membership fixed & soft & mistaken confidence concentration can bias soft targets, but does not hard-edit candidate membership & restores prior and extracts topology-controlled active evidence \\
+\hline
+CroSel~\cite{tian2024crosel} & history queue / selected pseudo-label set & FIFO memory bank supports cross-network selection of stable, confident candidate labels & selected-set state & selected labels depend on historical prediction stability under the standard PLL assumption that the true label is in the candidate set & queue stability inspires salvage, but NSE uses tri-consensus and restores the native NPLL prior \\
+\hline
+POP~\cite{xu2022pop} & candidate membership & progressive purification removes low-confidence labels & yes & mistaken deletion may remove useful ambiguous support from later training & no persistent candidate deletion \\
+\hline
+FREDIS~\cite{qiao2023fredis} & candidate membership & score-gap refinement inserts non-candidates and score-gap disambiguation removes candidates & yes & later disambiguation can remove mistaken refinement labels, but both procedures update the working candidate-set state across fusion rounds & restore native prior before extraction \\
+\hline
+NPLL reconstruction~\cite{peng2025noise} & reconstructed candidate set & sample separation and KNN/model pseudo-label evidence reconstruct shorter candidate label sets for training & working reconstruction & training optimizes reconstructed membership rather than an extracted active set anchored by restored prior & extract active supervision, not a new candidate state \\
+\hline
+PALS~\cite{pals2025} & pseudo-label/partial-label augmentation & confident top-1 predictions can augment the next-iteration partial label & partial & model-updated features and predictions can influence subsequent pseudo-labelling and partial-label augmentation & model evidence remains epoch-local and prior-constrained \\
+\hline
+UPLLRS~\cite{Shi2023Unreliable} & split/training-stage state & recursively separates reliable and unreliable subsets for disambiguation and semi-supervised training & yes & errors in the reliable/unreliable split can affect subsequent disambiguation and semi-supervised training & active eligibility is regenerated each epoch \\
+\hline
+IRNet~\cite{lian2023irnet} & correction state & candidate/non-candidate score-gap detection followed by non-candidate insertion & yes & correction quality depends on the chosen detection stage and is then carried forward & no correction state is written back \\
+\hline
+PiCO/PiCO+~\cite{wang2022pico,wang2022pico+} & pseudo-target state & pseudo targets are updated and influence contrastive positive pairs & yes & pseudo-target errors may affect later target construction & pseudo-labels are temporary active targets \\
+\hline
+ALIM~\cite{xu2023alim} & importance weights / adjusted training targets & recomputes weights from initial candidate set and model outputs & no hard rewrite & close to source preservation, but adjustment happens at prediction-level importance rather than topology-controlled extraction & topology extraction from restored prior \\
+\hline
+\textbf{NSE} & restored working prior & $\tilde{\Omega}_i^t \leftarrow \Omega_i^0$, then temporary evidence extraction & \textbf{no} & depends on extraction quality and active-set precision & \textbf{epoch-wise source restoration} \\
+\bottomrule
+\end{tabular}
+\caption{Persistent supervision state versus epoch-wise restored extraction in PLL/NPLL. The comparison separates where model-induced supervision is stored: some methods keep candidate membership fixed but update weights or targets, while others carry candidate membership, reconstructed candidate sets, pseudo-targets, label-importance weights, or sample-reliability states across epochs. NSE distinguishes the native source record $\Omega_i^0$ from temporary working evidence and restores the working prior before each extraction stage.}
+\label{tab:method_positioning}
+\end{table*}
+
+\subsection{Graph-Based Extraction from Weak Supervision}
+Graph-based PLL uses the local feature neighborhood as an additional source of
+weak supervision. IPAL \cite{zhang2015solving} performs instance-based label
+propagation in standard PLL. PALS \cite{pals2025} extends the KNN perspective to
+NPLL by exploiting noisy partial labels through weighted nearest-neighbor
+pseudo-labelling and label smoothing. These methods indicate that local
+geometry can recover useful supervision even when individual candidate sets are
+ambiguous.
+
+NSE follows this graph-based direction but changes the role of the KNN graph.
+Instead of using a fixed similarity kernel to generate pseudo-labels, NSE uses
+Topology-DAES as a supervision extraction kernel. Topology-DAES first evaluates
+whether local neighbor votes are consistent with the native weak prior through
+masked-entropy reliability, and then adapts the propagation temperature
+according to neighborhood entropy. Thus, the KNN graph is not merely a
+pseudo-label generator; it becomes a reliability-controlled extractor from an
+epoch-wise restored weak prior. Instead of replacing or rewriting the candidate
+set, the native candidate/crowd prior constrains the model belief before it
+enters the second propagation stage. The reliability ratio $r_i$ performs
+sample-wise arbitration between Topology-DAES geometric evidence and temporary
+model evidence. PiCO+ further shows that distance to class prototypes can help
+distinguish clean and noisy examples under NPLL. NSE uses the same intuition in
+a weaker, non-persistent form: class-center scores participate in the
+model--KNN--prototype consensus used to salvage active samples, but the
+prototype-induced pseudo-target is not written into a later-epoch supervision
+state. Reliable selection and salvage affect training eligibility, not the
+persistent native candidate/crowd record.

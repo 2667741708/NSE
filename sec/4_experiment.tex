@@ -1,0 +1,433 @@
+\section{Experiments}
+\label{sec:experiments}
+
+\subsection{Experimental Setup}
+\textbf{Datasets and protocols.}
+We evaluate NSE on CIFAR-10 and CIFAR-100~\cite{krizhevsky2009learning},
+the hierarchical CIFAR-100H setting used in PALS~\cite{pals2025}, and three
+real-world crowdsourced datasets: Treeversity, Benthic, and
+Plankton~\cite{schmarje2022one}. For synthetic PLL/NPLL, we follow the
+standard protocol of PiCO+~\cite{wang2022pico+}. Each incorrect class is added
+to the candidate set according to the partial rate $q$, and the ground-truth
+class is removed with probability $\eta$ to simulate noisy partial labels. We
+ensure every training sample has a non-empty observed candidate set. For
+crowdsourced datasets, the native source $\Omega_i^0$ is a soft crowd prior
+obtained by normalizing annotator votes; LPI denotes the number of labels per
+image used to form the prior.
+
+\textbf{Baselines and metrics.}
+We compare against PLL and NPLL baselines including RC~\cite{feng2020provably},
+LWS~\cite{wen2021leveraged}, PiCO~\cite{wang2022pico},
+CRDPLL~\cite{wu2022revisiting}, PiCO+~\cite{wang2022pico+},
+FREDIS~\cite{qiao2023fredis}, IRNet~\cite{lian2023irnet},
+UPLLRS~\cite{Shi2023Unreliable}, ALIM~\cite{xu2023alim}, and
+PALS~\cite{pals2025}. We report final-epoch test accuracy because NPLL does not
+assume a clean validation set for model selection. Unless otherwise noted,
+NSE results are mean and standard deviation over three independent seeds. For
+baseline methods, the reported numbers are taken from the PALS paper and the
+PALS-reported comparison tables under the same benchmark protocol. We cite the
+original baseline papers to identify the compared methods, not to indicate that
+we independently reran every baseline or copied numbers from the original
+baseline papers. Entries absent from the PALS comparison are kept unreported.
+Our NSE runs use the same benchmark backbone family, training budget,
+augmentation protocol, and validation-free final-epoch test selection used by
+the PALS protocol.
+
+\textbf{Diagnostics.}
+For source-restoration analysis, let $A_t$ be the final-epoch active set,
+$\hat{y}_i^t$ its pseudo-label, $\Omega_i^0$ the native source, and
+$\tilde{\Omega}_i^t$ the working source. Let
+$\mathcal{C}_0=\{i:y_i\in\operatorname{supp}_\epsilon(\Omega_i^0)\}$ be the
+initially clean samples and
+$\mathcal{N}_0=\{i:y_i\notin\operatorname{supp}_\epsilon(\Omega_i^0)\}$ the
+initially noisy samples. We report
+\begin{align}
+\operatorname{Prec}(A_t)&=\frac{1}{|A_t|}\sum_{i\in A_t}\mathbf{1}[\hat{y}_i^t=y_i],
+\nonumber\\
+\operatorname{Cov}(A_t)&=\frac{|A_t|}{N}, \nonumber\\
+\operatorname{NRR\mbox{-}A}_t
+&=\frac{1}{|\mathcal{N}_0|}
+\sum_{i\in A_t\cap\mathcal{N}_0}\mathbf{1}[\hat{y}_i^t=y_i],
+\nonumber\\
+\operatorname{Drift}_t
+&=\frac{1}{N}\sum_i\|\tilde{\Omega}_i^t-\Omega_i^0\|_1 .
+\label{eq:diagnostics_active}
+\end{align}
+For persistent source-state variants, $W_t$ is the set of samples whose source
+row is updated at epoch $t$. We define
+$\operatorname{Write}_t=|W_t|/N$,
+$\operatorname{Wrong}_t=|W_t|^{-1}\sum_{i\in W_t}\mathbf{1}[\hat{y}_i^t\ne y_i]$
+when $|W_t|>0$,
+$\operatorname{SrcRec\mbox{-}N}_t=
+|\mathcal{N}_0|^{-1}\sum_{i\in\mathcal{N}_0}\mathbf{1}[y_i\in\operatorname{supp}_\epsilon(\tilde{\Omega}_i^t)]$,
+and
+$\operatorname{Damage}_t=
+1-|\mathcal{C}_0|^{-1}\sum_{i\in\mathcal{C}_0}\mathbf{1}[y_i\in\operatorname{supp}_\epsilon(\tilde{\Omega}_i^t)]$.
+For soft persistent states, we additionally report the true-label mass recovered
+on initially noisy samples and the true-label mass weakened on initially clean
+samples:
+\begin{align}
+\operatorname{MassRec\mbox{-}N}_t
+&=
+|\mathcal{N}_0|^{-1}
+\sum_{i\in\mathcal{N}_0}\tilde{\Omega}_{i,y_i}^t,
+\nonumber\\
+\operatorname{DamageMass}_t
+&=
+|\mathcal{C}_0|^{-1}
+\sum_{i\in\mathcal{C}_0}
+\max(0,\Omega_{i,y_i}^0-\tilde{\Omega}_{i,y_i}^t).
+\nonumber
+\end{align}
+For persistent sample-promotion variants, $W_t$ is replaced by the set of newly
+promoted samples, and the same event-error definition is reported as
+$\operatorname{WrongPromote}_t$. When $|W_t|=0$, the error rate is not
+applicable and is reported as ``--''. We also report AUC-Drift, the mean
+epoch-wise drift over training, to capture long-term source movement rather than
+only the final source state.
+
+\textbf{Implementation details.}
+CIFAR experiments use ResNet-18 and 500 training epochs with SGD, momentum
+$0.9$, weight decay $10^{-3}$, batch size $256$, and cosine learning-rate
+decay. For Treeversity, Benthic, and Plankton, we align with the reported PALS
+setup where specified by using the same ResNet-50 architecture, ImageNet
+pretrained initialization~\cite{he2016deep,russakovsky2015imagenet}, and 100
+training epochs. Since the PALS paper does not fully specify all crowdsourced
+fold conditions, we fix fold 2 as the test split and use folds 1, 3, 4, and 5
+as training folds. Unless otherwise specified, both propagation passes use
+Topology-DAES, the model branch is warmed up for 20 epochs, and the
+model-evidence cap is $w_{\max}=0.5$. Table~\ref{tab:hparams} summarizes the
+fixed hyperparameters used in the main experiments.
+
+\begin{table*}[t]
+\centering
+\scriptsize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{l|c|l}
+\toprule
+\textbf{Parameter} & \textbf{Value} & \textbf{Role} \\
+\midrule
+$K$ & 15 & nearest neighbors per sample \\
+$\delta$ & 0.25 & class-balanced reliable-selection quantile \\
+$\gamma$ & 2.0 & masked-entropy reliability strength \\
+$\tau_{\mathrm{sp}}$ & 0.5 & spatial softmax temperature \\
+$\tau_0$ & 0.1 & base DAES propagation temperature \\
+$\lambda_H$ & 0.5 & entropy-adaptive temperature coefficient \\
+$p_{\mathrm{sim}}$ & 2 & squared similarity power \\
+$T_{\mathrm{warm}}$ & 20 & model-evidence warm-up epochs \\
+$w_{\max}$ & 0.5 & maximum model-evidence contribution \\
+$L_{\mathrm{hist}}$ & 15 & salvage history length \\
+$\alpha_{\mathrm{mix}}$ & 1.0 & MixUp Beta parameter \\
+$\epsilon_{\mathrm{ls}}$ & 0.0 & label smoothing value \\
+$\beta$ & 0.9 & prototype EMA coefficient \\
+\bottomrule
+\end{tabular}
+\caption{Default hyperparameters for NSE. Values are fixed across the main CIFAR experiments unless an ablation explicitly changes them.}
+\label{tab:hparams}
+\end{table*}
+
+\subsection{Main Results}
+
+\begin{table*}[t]
+\centering
+\fontsize{8pt}{8pt}\selectfont
+\setlength{\tabcolsep}{2pt}
+\begin{tabular}{l|ccc|ccc|ccc}
+\toprule
+\multirow{2}{*}{\textbf{CIFAR-10}} &\multicolumn{3}{c|}{ $q=0.1$} &\multicolumn{3}{c|}{$q=0.3$} &\multicolumn{3}{c}{$q=0.5$}\\
+\cline{2-10}
+&$\eta=0.1$ &$\eta=0.2$ &$\eta=0.3$ &$\eta=0.1$ &$\eta=0.2$ &$\eta=0.3$ &$\eta=0.1$ &$\eta=0.2$ &$\eta=0.3$ \\
+\hline
+RC& 80.87$\pm$0.30& 78.22$\pm$0.23& 75.24$\pm$0.17& 79.69$\pm$0.37& 75.69$\pm$0.63& 71.01$\pm$0.54& 72.46$\pm$1.51& 59.72$\pm$0.42&49.74$\pm$0.70\\
+LWS& 82.97$\pm$0.24& 79.46$\pm$0.09& 74.28$\pm$0.79& 80.93$\pm$0.28& 76.07$\pm$0.38& 69.70$\pm$0.72& 70.41$\pm$2.68& 58.26$\pm$0.28&39.42$\pm$3.09\\ 
+FREDIS& 90.57$\pm$0.23& 88.01$\pm$ 0.19 & 84.35$\pm$0.20& 89.02$\pm$0.15& 86.14$\pm$0.17 & 81.02$\pm$0.60& 87.42$\pm$0.21& 80.81$\pm$0.99 &65.15$\pm$0.13\\
+PiCO& 90.78$\pm$0.24& 87.27$\pm$0.11& 84.96$\pm$0.12& 89.71$\pm$0.18& 85.78$\pm$0.23& 82.25$\pm$0.32& 88.11$\pm$0.29& 82.41$\pm$0.30&68.75$\pm$2.62 \\
+CRDPLL& 93.48$\pm$0.17& 89.13$\pm$0.39& 86.19$\pm$0.48& 92.73$\pm$0.19& 86.96$\pm$0.21& 83.40$\pm$0.14& 91.10$\pm$0.07& 82.30$\pm$0.46&73.78$\pm$0.55 \\
+IRNet& 93.44$\pm$0.21& 92.57$\pm$0.25& 92.38$\pm$0.21& 92.81$\pm$0.19& 92.18$\pm$0.18& 91.35$\pm$0.08& 91.51$\pm$0.05& 90.76$\pm$0.10&86.19$\pm$0.41\\
+PiCO+ & 94.48$\pm$0.02 & 94.74$\pm$0.13 & 94.43$\pm$0.19 & 94.02$\pm$0.03 & 94.03$\pm$0.01 & 92.94$\pm$0.24 & 93.56$\pm$0.08 & 92.65$\pm$0.26 & 88.21$\pm$0.37 \\
+UPLLRS& 95.16$\pm$0.10& -& 94.65$\pm$0.23& 94.32$\pm$0.21& -& 93.85$\pm$0.31& 92.47$\pm$0.19& -&91.55$\pm$0.38\\
+ALIM-Scale & 95.71$\pm$0.01 & 95.50$\pm$0.08 & 95.35$\pm$0.13 & 95.31$\pm$0.16 & 94.77$\pm$0.07 & 94.36$\pm$0.03 & 94.71$\pm$0.04 & 93.82$\pm$0.13 & 90.63$\pm$0.10 \\
+ALIM-Onehot & 95.83$\pm$0.13 & 95.86$\pm$0.15 & 95.75$\pm$0.19 & 95.52$\pm$0.15 & 95.41$\pm$0.13 & 94.67$\pm$0.21 & 95.19$\pm$0.24 & 93.89$\pm$0.21 & 92.26$\pm$0.29 \\ 
+PALS & { 96.28$\pm$0.05} & { 96.17$\pm$0.18} & { 95.90$\pm$0.20} & { 95.96$\pm$0.08} & { 95.76$\pm$0.12} & { 95.43$\pm$0.17} & { 95.52$\pm$0.13} & \textbf{95.89$\pm$0.14} & { 94.18$\pm$0.10} \\
+\rowcolor{gray!15} \textbf{NSE} &\textbf{96.72$\pm$0.11} & \textbf{96.58$\pm$0.05} & \textbf{96.71$\pm$0.07} & \textbf{96.33$\pm$0.08} & \textbf{96.19$\pm$0.12} & \textbf{96.03$\pm$0.08} & \textbf{95.93$\pm$0.19} & 95.19$\pm$0.13 & \textbf{94.82$\pm$0.04} \\
+\midrule
+\hline
+\multirow{2}{*}{\textbf{CIFAR-100}} &\multicolumn{3}{c|}{ $q=0.01$} &\multicolumn{3}{c|}{$q=0.03$} &\multicolumn{3}{c}{$q=0.05$}\\
+\cline{2-10}
+&$\eta=0.1$ &$\eta=0.2$ &$\eta=0.3$ &$\eta=0.1$ &$\eta=0.2$ &$\eta=0.3$ &$\eta=0.1$ &$\eta=0.2$ &$\eta=0.3$ \\
+\hline
+RC& 52.73$\pm$1.05& 48.59$\pm$1.04& 45.77$\pm$0.31& 52.15$\pm$0.19& 48.25$\pm$0.38& 43.92$\pm$0.37& 46.62$\pm$0.34& 45.46$\pm$0.21&40.31$\pm$0.55\\
+LWS& 56.05$\pm$0.20& 50.66$\pm$0.59& 45.71$\pm$0.45& 53.59$\pm$0.45& 48.28$\pm$0.44& 42.20$\pm$0.49& 45.46$\pm$0.44& 39.63$\pm$0.80&33.60$\pm$0.64\\
+FREDIS& 64.73$\pm$0.28& 64.53 $\pm$ 0.39 & 59.42$\pm$0.18& 67.38$\pm$0.40 & 63.86$\pm$0.50 & 60.86$\pm$0.72 & 66.43$\pm$0.22& 63.09 $\pm$ 0.22 &56.15$\pm$0.18\\
+PiCO& 68.27$\pm$0.08& 62.24$\pm$0.31& 58.97$\pm$0.09& 67.38$\pm$0.09& 62.01$\pm$0.33& 58.64$\pm$0.28& 67.52$\pm$0.43& 61.52$\pm$0.28&58.18$\pm$0.65\\
+CRDPLL& 68.12$\pm$0.13& 65.32$\pm$0.34& 62.94$\pm$0.28& 67.53$\pm$0.07& 64.29$\pm$0.27& 61.79$\pm$0.11& 67.17$\pm$0.04& 64.11$\pm$0.42&61.03$\pm$0.43\\
+IRNet& 71.17$\pm$0.14& 70.10$\pm$0.28& 68.77$\pm$0.28& 71.01$\pm$0.43& 70.15$\pm$0.17& 68.18$\pm$0.30& 70.73$\pm$0.09& 69.33$\pm$0.51&68.09$\pm$0.12\\
+PiCO+ & 75.04$\pm$0.18 & 74.31$\pm$0.02 & 71.79$\pm$0.17 & 74.68$\pm$0.19 & 73.65$\pm$0.23 & 69.97$\pm$0.01 & 73.06$\pm$0.16 & 71.37$\pm$0.16 & 67.56$\pm$0.17 \\
+UPLLRS& 75.73$\pm$0.41& -& 71.72$\pm$0.39& -& -& -& 74.73$\pm$0.24& -&70.31$\pm$0.22\\
+ALIM-Scale & 77.37$\pm$0.32 & 76.81$\pm$0.05 & 76.45$\pm$0.30 & 77.60$\pm$0.18 & 76.63$\pm$0.19 & 75.92$\pm$0.14 & 76.86$\pm$0.23 & 76.44$\pm$0.12 & 75.67$\pm$0.17 \\
+ALIM-Onehot & 76.52$\pm$0.19 & 76.55$\pm$0.24 & 76.09$\pm$0.23 & 77.27$\pm$0.23 & 76.29$\pm$0.41 & 75.29$\pm$0.57 & 76.87$\pm$0.20 & 75.23$\pm$0.42 & 74.49$\pm$0.61 \\ 
+PALS & {80.90$\pm$0.50} & {80.45$\pm$0.49} & {79.78$\pm$0.13} & {80.33$\pm$0.04} & { 79.40$\pm$0.50} & { 78.52$\pm$0.24} & {80.00$\pm$0.25} & { 79.08$\pm$0.22} & {77.87$\pm$0.29} \\
+\rowcolor{gray!15} \textbf{NSE} & \textbf{81.62$\pm$0.09} & \textbf{81.34$\pm$0.17} & \textbf{80.76$\pm$0.34} & \textbf{81.10$\pm$0.11} & \textbf{80.44$\pm$0.19} & \textbf{79.47$\pm$0.06} & \textbf{80.32$\pm$0.47} & \textbf{80.05$\pm$0.20} & \textbf{79.22$\pm$0.14}  \\
+\bottomrule
+\end{tabular}
+\caption{Comparison with previous methods on synthetic NPLL benchmarks. Baseline numbers follow the PALS-reported comparison tables; missing entries are kept unreported when absent from that comparison.}
+\label{tab:cifar}
+\end{table*}
+
+Table~\ref{tab:cifar} shows that NSE is consistently competitive on CIFAR-10
+and CIFAR-100. The strongest gains appear on CIFAR-100, where the native
+candidate source is sparse and true-label absence is more damaging; at
+$q=0.05,\eta=0.3$, NSE reaches $79.22\%\pm0.14$, improving over PALS by
+$1.35$ points.
+
+\begin{table}[t]
+\centering
+\fontsize{8pt}{8pt}\selectfont
+\begin{tabular}{l|c|c}
+\hline
+\multirow{2}{*}{CIFAR-100} &$q=0.05$ &$q=0.05$ \\
+&$ \eta=0.4$ &$ \eta=0.5$ \\
+\hline
+FREDIS & 53.44$\pm$0.39 & 48.05$\pm$0.20 \\
+PiCO& 44.17$\pm$0.08&35.51$\pm$1.14\\
+CRDPLL& 57.10$\pm$0.24&52.10$\pm$0.36\\
+UPLLRS & -& 64.78$\pm$0.53 \\
+PiCO+ & 66.41$\pm$0.58 & 60.50$\pm$0.99 \\
+ALIM-Scale & 74.98$\pm$0.16 & 72.26$\pm$0.25 \\
+ALIM-Onehot & 71.76$\pm$0.56 & 69.59$\pm$0.62 \\
+PALS & {76.72$\pm$0.41} & { 74.79$\pm$0.40} \\
+\hline
+\rowcolor{gray!15} \textbf{NSE} & \textbf{78.04$\pm$0.06} & \textbf{76.69$\pm$0.46} \\
+\hline
+\end{tabular}
+\caption{Extreme-noise results on CIFAR-100.}
+\label{tab:extreme_noise}
+\end{table}
+
+Table~\ref{tab:extreme_noise} evaluates higher noise rates, where many samples
+miss their true label. NSE remains ahead of PALS and ALIM, suggesting that
+active extraction from the restored prior is still effective even when source
+membership is frequently incomplete.
+
+\begin{table}[t]
+\centering
+\fontsize{8pt}{8pt}\selectfont
+\begin{tabular}{l|c|c|c}
+\hline
+CIFAR-100 & $q=0.01$ & $q=0.05$ & $q=0.1$ \\
+\hline
+RC & 75.36$\pm$0.06& 74.44$\pm$0.31& 73.79$\pm$0.29\\
+LWS & 64.55$\pm$1.98& 50.19$\pm$0.34& 44.93$\pm$1.09\\
+PiCO & 73.78$\pm$0.15& 72.78$\pm$0.38& 71.55$\pm$0.31\\
+CRDPLL & 79.74$\pm$0.07& 78.97$\pm$0.13& 78.51$\pm$0.24\\
+PiCO+ &76.29$\pm$0.42 & 76.17$\pm$0.18 & 75.55$\pm$0.21 \\
+PALS &{ 81.46$\pm$0.13} & {81.00$\pm$0.26} & { 80.77$\pm$0.12} \\
+\hline
+\rowcolor{gray!15} \textbf{NSE} & \textbf{82.25$\pm$0.12} & \textbf{81.27$\pm$0.16} & \textbf{80.79$\pm$0.20} \\
+\hline 
+\end{tabular} 
+\caption{Noise-free PLL results on CIFAR-100.}
+\label{tab:no_noise}
+\end{table}
+
+\begin{table}[t]
+\centering
+\fontsize{8pt}{8pt}\selectfont
+\begin{tabular}{l|c}
+\hline
+Dataset &CIFAR-100H\\
+$q$ &$0.5$\\
+$\eta$ &$0.2$ \\
+\hline
+PiCO & 59.8$\pm$0.25\\
+PiCO+ & 68.31$\pm$0.47\\
+ALIM-Scale & 73.42$\pm$0.18\\
+ALIM-Onehot & 72.36$\pm$0.20\\
+PALS & {75.16$\pm$0.59}\\
+\rowcolor{gray!15} \textbf{NSE} & \textbf{76.54$\pm$0.18}\\
+\hline
+\end{tabular}
+\caption{Hierarchical CIFAR-100H result.}
+\label{tab:cifar100h}
+\end{table}
+
+\begin{table}[t]
+\centering
+\fontsize{8pt}{8pt}\selectfont
+\begin{subtable}{1.0\linewidth}
+\begin{tabular}{l|c|c|c}
+\hline
+& Treeversity & Benthic & Plankton \\
+\hline
+Divide-Mix & 77.84$\pm$0.52 & 71.72$\pm$1.21 & 91.79$\pm$0.51 \\
+ELR+ & 79.05$\pm$1.22 & 67.53$\pm$1.76 & 91.76$\pm$0.91 \\
+PiCO & \textbf{84.74$\pm$0.42} & 51.01$\pm$0.74 & 24.95$\pm$0.13 \\
+PALS & 81.56$\pm$0.28 & \textbf{77.50$\pm$0.35} & 90.04$\pm$0.50 \\
+\textbf{NSE} &83.76$\pm$0.50 &77.24$\pm$0.32 &{\textbf{92.68$\pm$0.14}} \\
+\hline
+\end{tabular}
+\caption{Ten human annotators}
+\label{tab:crowd_sourced_10annot}
+\end{subtable}
+\newline
+\vspace*{0.125 em}
+\newline
+\begin{subtable}{1.0\linewidth}
+\begin{tabular}{l|c|c|c}
+\hline
+& Treeversity & Benthic & Plankton \\
+\hline
+Divide-Mix & 76.38$\pm$1.78 & 71.50$\pm$0.42 & 91.96$\pm$0.52 \\
+ELR+ & 77.07$\pm$0.43 & 69.35$\pm$0.97 & 91.36$\pm$0.40 \\
+ALIM-Onehot & 82.58$\pm$0.92 & 49.17$\pm$3.06 & 23.75$\pm$2.53 \\
+PALS & 80.47$\pm$1.22 & 76.52$\pm$0.03 & 90.20$\pm$0.97 \\
+\textbf{NSE} &{\textbf{83.77$\pm$0.97}} &{\textbf{76.82$\pm$0.42}} &{\textbf{92.76$\pm$0.14}} \\
+\hline
+\end{tabular}
+\caption{Three human annotators}
+\label{tab:crowd_sourced_3annot}
+\end{subtable}
+\caption{Crowdsourced datasets. NSE is strongest on Plankton and remains competitive on Treeversity and Benthic, where margins are within or close to the standard deviations of the strongest baselines.}
+\label{tab:crowd_sourced}
+\end{table}
+
+\subsection{Component Ablations}
+Table~\ref{tab:component_ablation} isolates the implemented components on
+CIFAR-100 with $q=0.05,\eta=0.3$. All rows use 500 epochs and three seeds. The
+baseline row matches the main NSE protocol used in Table~\ref{tab:cifar}.
+
+\begin{table*}[t]
+\centering
+\scriptsize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{p{0.14\linewidth}|p{0.46\linewidth}|c|c}
+\toprule
+\textbf{ID} & \textbf{Ablation} & \textbf{Final Acc.} & \textbf{$\Delta$} \\
+\midrule
+\rowcolor{gray!15} A0 & full NSE: two-pass Topology-DAES, adaptive $r_i$, candidate-prior-projected model evidence, active salvage & 79.22$\pm$0.14 & -- \\
+\hline
+A1 & replace both Topology-DAES passes with a fixed exponential kernel & 76.50$\pm$0.20 & -2.72 \\
+\hline
+A2 & replace only the second Topology-DAES pass with a fixed exponential kernel & 78.56$\pm$0.05 & -0.66 \\
+\hline
+A3 & replace only the first Topology-DAES pass with a fixed exponential kernel & 76.51$\pm$0.12 & -2.71 \\
+\hline
+A4 & use constant $r_i=0.5$ instead of confidence-ratio arbitration & 79.14$\pm$0.11 & -0.08 \\
+\hline
+A5 & remove the candidate-prior projection from model evidence & 78.17$\pm$0.06 & -1.05 \\
+\hline
+A6 & set $w_{\max}=0.0$ so the second-stage input is KNN-only & 78.99$\pm$0.04 & -0.23 \\
+\hline
+A7 & set $w_{\max}=1.0$ after warm-up & 79.13$\pm$0.13 & -0.09 \\
+\hline
+A8 & detect salvage candidates but do not promote them into active training & 78.67$\pm$0.29 & -0.55 \\
+\bottomrule
+\end{tabular}
+\caption{Component ablations on CIFAR-100 ($q=0.05,\eta=0.3$).}
+\label{tab:component_ablation}
+\end{table*}
+
+The largest drop comes from replacing the first Topology-DAES pass, either alone
+or together with the second pass. This supports the claim that robust extraction
+starts from topology-controlled propagation of the restored prior. Removing the
+candidate-prior projection from model evidence costs about one point, indicating
+that the native source is still useful as a constraint even under NPLL noise.
+The confidence-ratio gate and model cap have smaller effects; they are
+stabilizing choices rather than the main source of performance. Disabling
+salvage reduces accuracy by $0.55$ points, supporting the role of consensus
+recovery for samples outside the conservative reliable set.
+
+\subsection{Persistent Supervision State Proxies}
+The core claim of NSE is not only that its extraction modules work, but that
+NPLL does not require inheriting model-induced supervision state across epochs.
+We therefore run a controlled persistent-state proxy study on CIFAR-100
+($q=0.05,\eta=0.3$). These rows are not full reimplementations of the prior
+methods. Instead, each row transplants the core inherited-supervision mechanism
+of a representative method into the same NSE extractor, model, warm-up schedule,
+active-set training, and salvage logic. This isolates the effect of carrying
+candidate membership, soft pseudo-targets, or reliable-promotion state into
+later epochs.
+The proxies are intentionally conservative and mechanism-aligned. UPLLRS-PSS
+uses the NSE-estimated noisy set because UPLLRS is built around a
+reliable/unreliable split; promoted labels are selected only from the native
+non-candidate space. IRNet-PSS does not use the NSE-estimated noisy set, because
+IRNet defines its own noisy-sample detector through the gap between the best
+candidate and best non-candidate scores. FREDIS-PSS follows the score-gap
+refinement/disambiguation rule and additionally requires high-confidence
+non-candidate insertion and low-confidence candidate removal to avoid an
+overly aggressive proxy. PALS/SARI-PSS keeps the all-sample confident top-1
+partial-label augmentation rule, but uses a high threshold schedule
+($0.95\rightarrow0.85$) because SARI's original lower threshold is coupled with
+label smoothing and its full training pipeline. PiCO+-PSS isolates persistent
+soft pseudo-target carry-over; when prototype scores are not reproduced, the
+proxy uses the second-pass NSE evidence $P^{(2)}$ as the soft target evidence.
+We keep Peng et al.'s candidate-label reconstruction framework in Related Work
+but exclude it from this controlled proxy table because it couples persistent
+candidate reconstruction with a separate feature-space reconstruction pipeline;
+the table below tests only supervision-state carry-over under the same NSE
+extractor.
+
+\begin{table*}[t]
+\centering
+\tiny
+\setlength{\tabcolsep}{2pt}
+\begin{tabular}{p{0.14\linewidth}|p{0.20\linewidth}|p{0.18\linewidth}|c|c|c|c|c|c}
+\toprule
+\textbf{Condition} & \textbf{Prior-aligned inherited state} & \textbf{Proxy operator} & \textbf{Host} & \textbf{Best Acc.} & \textbf{Final Acc.} & \textbf{Prec(A)} & \textbf{Cov(A)} & \textbf{NRR-A} \\
+\midrule
+\rowcolor{gray!15} NSE-Reset & none; restore $\tilde{\Omega}^t\leftarrow\Omega^0$ each epoch & none & c201 & 79.55$\pm$0.04 & 79.38$\pm$0.16 & 0.932 & 0.887 & 0.660 \\
+\hline
+FREDIS-V2-PSS & refinement plus disambiguation candidate state & add top non-candidate if score gap $\le0.05$ and confidence $\ge0.85$; remove candidates with gap $\ge0.85$ and confidence $\le0.05$ & c201 & 78.42$\pm$0.17 & 78.10$\pm$0.20 & 0.916 & 0.873 & 0.640 \\
+\hline
+IRNet-V2-PSS & noisy-sample correction state & insert best non-candidate if it exceeds the best candidate and its confidence is at least $0.85$; no swapping & c201 & 78.26$\pm$0.34 & 78.04$\pm$0.27 & 0.917 & 0.873 & 0.641 \\
+\hline
+PALS/SARI-V2-PSS & partial-label augmentation state & all-sample top-1 augmentation with a conservative linear threshold $0.95\rightarrow0.85$ & c201 & 79.00$\pm$0.23 & 78.84$\pm$0.32 & 0.925 & 0.881 & 0.647 \\
+\hline
+UPLLRS-V2-PSS & persistent reliable-promotion state & from NSE-estimated noisy samples, store high-confidence native non-candidate pseudo-labels and force them into later active training & c201 & 78.68$\pm$0.10 & 78.51$\pm$0.12 & 0.921 & 0.884 & 0.647 \\
+\hline
+PiCO+-V2-PSS & persistent soft pseudo-target state & blend the next epoch soft target with $P^{(2)}$ using $\alpha_{\mathrm{wb}}=0.1$ & c201 & 59.90$\pm$0.67 & 59.68$\pm$0.65 & 0.606 & 0.975 & 0.589 \\
+\bottomrule
+\end{tabular}
+\caption{Persistent supervision-state proxy study on CIFAR-100 ($q=0.05,\eta=0.3$). All proxy rows keep the NSE extractor fixed and change only the inherited supervision state. The proxy rows are controlled diagnostics, not complete reproductions of the cited methods.}
+\label{tab:source_restoration_results}
+\end{table*}
+
+\begin{table}[t]
+\centering
+\tiny
+\setlength{\tabcolsep}{2pt}
+\begin{tabular}{l|c|c|c|c|c|c|c}
+\toprule
+\textbf{Condition} & \textbf{Write/Promote} & \textbf{Wrong} & \textbf{SrcRec-N} & \textbf{MassRec-N} & \textbf{Damage/Mass} & \textbf{Drift} & \textbf{AUC-Drift} \\
+\midrule
+\rowcolor{gray!15} NSE-Reset & 0.000 & -- & 0.000 & 0.000 & 0.000 & 0.000 & 0.000 \\
+FREDIS-V2-PSS & 0.000 & 0.000 & 0.182 & 0.177 & 0.002 & 0.394 & 0.308 \\
+IRNet-V2-PSS & 0.000 & 0.000 & 0.173 & 0.086 & 0.001 & 0.065 & 0.050 \\
+PALS/SARI-V2-PSS & 0.000 & 0.000 & 0.105 & 0.053 & 0.001 & 0.037 & 0.022 \\
+UPLLRS-V2-PSS & 0.029 & 0.334 & 0.000 & 0.000 & 0.000 & 0.000 & 0.000 \\
+PiCO+-V2-PSS & 1.000 & 0.402 & 1.000 & 0.152 & 0.107 & 1.787 & 1.687 \\
+\bottomrule
+\end{tabular}
+\caption{Final-epoch persistent-state diagnostics for Table~\ref{tab:source_restoration_results}. Write is used for candidate or soft source-state updates; Promote is used for UPLLRS-style sample-state promotion. For UPLLRS-PSS, Wrong reports cumulative wrong promotion among promoted samples; for other rows, Wrong is the final-epoch wrong-write rate when final-epoch writes occur. Soft states are additionally evaluated by MassRec-N and DamageMass.}
+\label{tab:source_contamination}
+\end{table}
+
+Tables~\ref{tab:source_restoration_results} and~\ref{tab:source_contamination}
+directly test the restoration claim. NSE inherits model parameters, prototypes,
+and diagnostic histories, but it does not inherit model-induced supervision
+state. The proxy rows test whether carrying the corresponding prior-work
+mechanism into later epochs improves the same extractor or instead introduces
+wrong writes, wrong promotions, source drift, soft-mass weakening, or
+clean-sample damage. All five inherited-state proxies underperform NSE-Reset in
+final accuracy: PALS/SARI-PSS is the least harmful but still drops by
+$0.54$ points, FREDIS-PSS and IRNet-PSS drop by $1.28$ and $1.34$ points,
+UPLLRS-PSS drops by $0.87$ points, and the soft PiCO+-style carry-over drops by
+$19.70$ points. The soft carry-over row is especially diagnostic: it recovers
+the true label somewhere in the soft support for all initially noisy samples
+($\operatorname{SrcRec\mbox{-}N}=1.000$), but it also writes every row at every
+epoch, has about $40\%$ wrong top-1 write events, and accumulates large source
+drift. This shows why source-level repair is not equivalent to reliable active
+supervision. NSE instead separates source-level recovery from active-set
+recovery: it does not try to write missing true labels back into the native
+source record, but recovers them through active supervision while preserving the
+native source record.

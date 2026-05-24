@@ -1,0 +1,15 @@
+track,condition,best_acc_mean,best_acc_std,final_acc_mean,final_acc_std,source_log
+component_ablation,A0_full,79.41,0.23,79.22,0.14,results/main_results/c100_pr005_nr03_maxw05/refactored_e500_seed1/master_log.txt;results/main_results/c100_pr005_nr03_maxw05/refactored_e500_seed23/master_log.txt
+component_ablation,A1_topology_daes_to_exp_both,76.70,0.14,76.50,0.20,results/component_ablation/A01_ablate_topology_daes_use_exp_both/master_log.txt
+component_ablation,A2_stage2_exp,78.76,0.16,78.56,0.05,results/component_ablation/A02_ablate_stage2_topology_daes_use_exp_s2/master_log.txt
+component_ablation,A3_stage1_exp,76.71,0.15,76.51,0.12,results/component_ablation/A03_ablate_stage1_topology_daes_use_exp_s1/master_log.txt
+component_ablation,A4_uniform_ri,79.32,0.11,79.14,0.11,results/component_ablation/A04_ablate_adaptive_ri_use_uniform_ri05/master_log.txt
+component_ablation,A5_no_candidate_prior_projection,78.33,0.04,78.17,0.06,results/component_ablation/A05_ablate_candidate_prior_unmask_model_evidence/master_log.txt
+component_ablation,A6_knn_only,79.11,0.10,78.99,0.04,results/component_ablation/A06_ablate_model_view_maxw0_knn_only/master_log.txt
+component_ablation,A7_maxw10,79.39,0.10,79.13,0.13,results/component_ablation/A07_stress_model_view_maxw1_full_model_influence/master_log.txt
+component_ablation,A8_detect_salvage_only,78.80,0.34,78.67,0.29,results/component_ablation/A08_ablate_salvage_training_log_only/master_log.txt
+persistent_state_v2,FREDIS_V2_PSS,78.42,0.17,78.10,0.20,results/persistent_state_v2/FREDIS_V2_PSS/master_log.txt
+persistent_state_v2,IRNet_V2_PSS,78.26,0.34,78.04,0.27,results/persistent_state_v2/IRNet_V2_PSS/master_log.txt
+persistent_state_v2,PALS_SARI_V2_PSS,79.00,0.23,78.84,0.32,results/persistent_state_v2/PALS_SARI_V2_PSS/master_log.txt
+persistent_state_v2,PiCOPlus_V2_PSS,59.90,0.67,59.68,0.65,results/persistent_state_v2/PiCOPlus_V2_PSS/master_log.txt
+persistent_state_v2,UPLLRS_V2_PSS,78.68,0.10,78.51,0.12,results/persistent_state_v2/UPLLRS_V2_PSS/master_log.txt

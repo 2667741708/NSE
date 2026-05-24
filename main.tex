@@ -1,0 +1,80 @@
+% main.tex
+\documentclass[10pt,twocolumn,letterpaper]{article}
+
+%%%%%%%%% PAPER TYPE  - PLEASE UPDATE FOR FINAL VERSION
+%\usepackage[review]{cvpr}      % To produce the REVIEW version
+%\usepackage{cvpr}              % To produce the CAMERA-READY version
+\usepackage[pagenumbers]{cvpr} % To force page numbers, e.g. for an arXiv version
+
+% Include other packages here, before hyperref.
+% cvpr.sty loads: times, xspace, xcolor, graphicx, amsmath, amssymb, booktabs, natbib, etc.
+\usepackage{multirow} % For complex tables
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows,positioning,fit,backgrounds,calc,shadows}
+%\usepackage{enumitem}
+%\usepackage{placeins}
+
+% Added packages
+\usepackage{pifont}
+\usepackage{colortbl}
+\usepackage{float}
+\floatstyle{ruled}
+\newfloat{algorithm}{t}{loa}
+\floatname{algorithm}{Algorithm}
+\newcommand{\cmark}{\ding{51}}% Checkmark
+\newcommand{\xmark}{\ding{55}}% Cross
+
+% Define math commands
+\input{math_commands.tex}
+
+% It is strongly recommended to use hyperref, especially for the review version.
+% hyperref with option pagebackref eases the reviewers' job.
+% Please disable hyperref *only* if you encounter grave issues, e.g. with the
+% file validation for the camera-ready version.
+\usepackage[pagebackref,breaklinks,colorlinks]{hyperref}
+
+% Support for easy cross-referencing
+% cvpr.sty loads cleveref automatically at end preamble, so we can omit it here or ensure options match.
+% \usepackage[capitalize]{cleveref} 
+
+%%%%%%%%% PAPER ID  - PLEASE UPDATE
+\def\paperID{****} % *** Enter the Paper ID here
+\def\confName{CVPR}
+\def\confYear{2025}
+
+% --- Embedded References (for convenience) ---
+% --- The filecontents environment for main.bib has been removed. 
+% --------------------------------------------------
+ 
+ \begin{document}
+
+%%%%%%%%% TITLE - PLEASE UPDATE
+\title{NSE: Non-Destructive Supervision Extraction from Noisy Partial Labels}
+
+\author{Haoming Wang\textsuperscript{1} \quad Junpeng Li\textsuperscript{1}\thanks{Corresponding author} \\
+\textsuperscript{1}School of Information Science and Engineering, Yanshan University\\
+{\tt\small 2667741708@qq.com}
+}
+
+\maketitle
+
+%%%%%%%%% ABSTRACT
+\input{sec/0_abstract}
+
+%%%%%%%%% BODY TEXT
+\input{sec/1_intro}
+\input{sec/2_relatedwork}
+\input{sec/3_method}
+\input{sec/4_experiment}
+\input{sec/5_conclusion}
+
+%%%%%%%%% REFERENCES
+{\small
+\clearpage
+\bibliographystyle{ieeenat_fullname}
+
+\bibliography{main}
+}
+
+\end{document}
+
