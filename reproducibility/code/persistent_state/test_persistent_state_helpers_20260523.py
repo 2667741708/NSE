@@ -6,7 +6,7 @@ from pathlib import Path
 import numpy as np
 
 
-TARGET = Path(os.environ.get("NSE_TRAIN_SCRIPT", Path(__file__).with_name("train_nse_source_mvp.py")))
+TARGET = Path(os.environ.get("NSE_TRAIN_SCRIPT", Path(__file__).with_name("train_nse_persistent_state_proxies_20260523.py")))
 
 
 def _load_functions(*names):

@@ -21,11 +21,16 @@ active. Legacy scripts are documented in [archive_policy.md](archive_policy.md).
 |---|---|---|
 | Main NSE results | [bayes_unified_main_20260523.py](code/main/bayes_unified_main_20260523.py#L1) | Historical main-result training entry copied from c201 |
 | Component ablations | [train_nse_component_ablation_20260523.py](code/component_ablation/train_nse_component_ablation_20260523.py#L1) | Current `main.pdf` A0--A8 entry |
-| Persistent-state v2 proxies | [train_nse_source_mvp_20260523.py](code/persistent_state/train_nse_source_mvp_20260523.py#L1) | Current local release implementation |
 | Persistent-state v2 proxy snapshot | [train_nse_persistent_state_proxies_20260523.py](code/persistent_state/train_nse_persistent_state_proxies_20260523.py#L1) | Exact c201 stable script snapshot used by the completed v2 proxy suite |
 | Persistent-state helper tests | [test_persistent_state_helpers_20260523.py](code/persistent_state/test_persistent_state_helpers_20260523.py#L1) | Local helper tests for update operators |
 
 The script hashes are stored in [sha256sums.txt](manifest/sha256sums.txt).
+
+For a cleaner handoff surface with descriptive experiment script names, use
+[paper_reproducible_release](../paper_reproducible_release/README.md). That
+directory intentionally contains only the current paper-facing main-result,
+component-ablation, and persistent-state-proxy entry points plus compact result
+summaries.
 
 Older component-audit copies were moved to
 [legacy_component_audit_20260523](archive/legacy_component_audit_20260523/).

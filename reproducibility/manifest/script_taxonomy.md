@@ -8,13 +8,23 @@
 | Component ablations A0--A8 | [train_nse_component_ablation_20260523.py](../code/component_ablation/train_nse_component_ablation_20260523.py#L1) | `/home/c201/公共/whm/PALS-SOFT/自适应LSR草稿_v3ref_only_20260409/bayes_unified_融合可靠_自适应R_i_双视图模型预测_分开model_ablation.py` | Current manuscript component table |
 | Persistent supervision state v2 proxies | [train_nse_persistent_state_proxies_20260523.py](../code/persistent_state/train_nse_persistent_state_proxies_20260523.py#L1) | `/home/c201/公共/whm/PALS-SOFT/双视图单视图实验结果/experiments/nse_mvp_source_writeback_20260514/train_nse_persistent_state_proxies.py` | Final five conservative prior-aligned proxy rows |
 
-## Local Release Surface
+## Clean Release Surface
 
-The local release script
-[train_nse_source_mvp_20260523.py](../code/persistent_state/train_nse_source_mvp_20260523.py#L1)
-is the reproducible implementation surface for persistent-state operators. It
-contains the current source-update modes, diagnostics, and helper-test coverage
-used to validate the v2 proxy family.
+For a handoff with more recognizable script names, use the parallel clean
+release directory:
+
+```text
+paper_reproducible_release/
+```
+
+It contains only the three paper-facing executable families:
+
+- `01_nse_main_table_train.py`
+- `02_nse_component_ablation_A0_A8_train.py`
+- `03_nse_persistent_supervision_state_proxy_train.py`
+
+The broader historical source-writeback stress-test script is deliberately not
+part of this active code surface.
 
 The stable c201 launchers are:
 
