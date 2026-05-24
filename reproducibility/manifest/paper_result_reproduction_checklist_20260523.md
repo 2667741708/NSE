@@ -12,6 +12,7 @@ provenance rows and are not rerun by NSE scripts.
 | Component ablations A0--A8 | [train_nse_component_ablation_20260523.py](../code/component_ablation/train_nse_component_ablation_20260523.py#L1) | [reproduce_component_ablation_c201.sh](../commands/reproduce_component_ablation_c201.sh#L1) |
 | Persistent supervision state proxies | [train_nse_persistent_state_proxies_20260523.py](../code/persistent_state/train_nse_persistent_state_proxies_20260523.py#L1) | [reproduce_persistent_state_v2_c201.sh](../commands/reproduce_persistent_state_v2_c201.sh#L1) |
 | Representative single-seed validation | same active scripts | [run_single_seed_validation_c201_gpu0.sh](../commands/run_single_seed_validation_c201_gpu0.sh#L1) and [run_single_seed_validation_c201_gpu1.sh](../commands/run_single_seed_validation_c201_gpu1.sh#L1) |
+| Additional noise-rate slice validation | [bayes_unified_main_20260523.py](../code/main/bayes_unified_main_20260523.py#L1) | [run_noise_rate_slice_validation_c201_gpu0.sh](../commands/run_noise_rate_slice_validation_c201_gpu0.sh#L1) and [run_noise_rate_slice_validation_c201_gpu1.sh](../commands/run_noise_rate_slice_validation_c201_gpu1.sh#L1) |
 
 ## One-To-One Result Matrix
 
@@ -112,3 +113,34 @@ Acceptance checks:
 | PALS/SARI-V2-PSS | 79.17 | 79.17 | 78.84 +/- 0.32 |
 | UPLLRS-V2-PSS | 78.82 | 78.69 | 78.51 +/- 0.12 |
 | PiCO+-V2-PSS | 59.91 | 59.57 | 59.68 +/- 0.65 |
+
+## Additional Noise-Rate Slice Validation
+
+This pass extends the reproduction checklist beyond the representative
+`CIFAR-100 q=0.05, eta=0.3` row by checking several noise-rate settings on both
+CIFAR-10 and CIFAR-100 with the same main NSE script and seed `1`.
+
+Selection rationale:
+
+- CIFAR-10 uses `q=0.5` and `eta in {0.1,0.2,0.3}` to validate the high
+  ambiguity setting across the paper's standard synthetic noise range.
+- CIFAR-100 uses `q=0.05` and `eta in {0.1,0.4,0.5}` to cover a low-noise row
+  and the two extreme-noise rows without duplicating the already completed
+  `eta=0.3` representative validation.
+
+Output root:
+
+```text
+/home/c201/公共/whm/PALS-SOFT/双视图单视图实验结果/results/nse_noise_rate_slice_validation_20260525
+```
+
+Planned rows:
+
+| Row | Script | Launcher | Status |
+|---|---|---|---|
+| CIFAR-10 `q=0.5, eta=0.1` | `train_nse_main_results.py` | `run_noise_rate_slice_validation_c201_gpu0.sh` | running |
+| CIFAR-10 `q=0.5, eta=0.2` | `train_nse_main_results.py` | `run_noise_rate_slice_validation_c201_gpu0.sh` | running |
+| CIFAR-10 `q=0.5, eta=0.3` | `train_nse_main_results.py` | `run_noise_rate_slice_validation_c201_gpu0.sh` | running |
+| CIFAR-100 `q=0.05, eta=0.1` | `train_nse_main_results.py` | `run_noise_rate_slice_validation_c201_gpu1.sh` | running |
+| CIFAR-100 `q=0.05, eta=0.4` | `train_nse_main_results.py` | `run_noise_rate_slice_validation_c201_gpu1.sh` | running |
+| CIFAR-100 `q=0.05, eta=0.5` | `train_nse_main_results.py` | `run_noise_rate_slice_validation_c201_gpu1.sh` | running |

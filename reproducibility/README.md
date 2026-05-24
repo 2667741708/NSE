@@ -53,6 +53,8 @@ Use these command templates on c201:
 - [reproduce_persistent_state_v2_c201.sh](commands/reproduce_persistent_state_v2_c201.sh)
 - [run_single_seed_validation_c201_gpu0.sh](commands/run_single_seed_validation_c201_gpu0.sh)
 - [run_single_seed_validation_c201_gpu1.sh](commands/run_single_seed_validation_c201_gpu1.sh)
+- [run_noise_rate_slice_validation_c201_gpu0.sh](commands/run_noise_rate_slice_validation_c201_gpu0.sh)
+- [run_noise_rate_slice_validation_c201_gpu1.sh](commands/run_noise_rate_slice_validation_c201_gpu1.sh)
 
 The single-seed launchers are a validation pass for the streamlined package.
 They do not replace the three-seed paper tables; they check that the active
@@ -96,3 +98,9 @@ Additional check on 2026-05-24:
 - c201 single-seed validation completed for 7 representative rows: FREDIS,
   IRNet, PALS/SARI, UPLLRS, PiCO+, component A0, and the main CIFAR-100
   `q=0.05, eta=0.3` row.
+
+Additional validation launched on 2026-05-25:
+
+- c201 noise-rate slice validation for CIFAR-10 `q=0.5, eta=0.1/0.2/0.3`
+  and CIFAR-100 `q=0.05, eta=0.1/0.4/0.5`, using the same main NSE script
+  with seed `1`.
