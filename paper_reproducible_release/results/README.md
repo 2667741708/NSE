@@ -13,5 +13,7 @@ Large historical result trees remain in `reproducibility/results/`.
   reproduction check for selected paper rows.
 - `noise_rate_slice_validation_summary_20260525.csv`: completed seed-1
   CIFAR-10/CIFAR-100 noise-rate checks against the paper three-seed values.
+- `seed1_repeat_consistency_summary_20260525.csv`: direct comparison between
+  the old three-seed run's seed-1 final accuracy and the repeated seed-1 run.
 - `noise_rate_slice_validation_20260525/`: copied `master_log.txt` files for
   those completed c201 validation runs.

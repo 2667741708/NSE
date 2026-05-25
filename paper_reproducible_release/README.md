@@ -37,6 +37,7 @@ not at the default path.
 | [persistent_state_proxy_diagnostics_summary_20260523.csv](results/persistent_state_proxy_diagnostics_summary_20260523.csv#L1) | Diagnostic metrics for the five persistent-state proxy rows |
 | [single_seed_validation_summary_20260524.csv](results/single_seed_validation_summary_20260524.csv#L1) | Representative single-seed validation pass |
 | [noise_rate_slice_validation_summary_20260525.csv](results/noise_rate_slice_validation_summary_20260525.csv#L1) | Completed C10/C100 seed-1 noise-rate validation compared with paper three-seed values |
+| [seed1_repeat_consistency_summary_20260525.csv](results/seed1_repeat_consistency_summary_20260525.csv#L1) | Direct old three-seed seed-1 vs repeated seed-1 consistency check |
 
 The one-to-one row checklist remains in
 [paper_result_reproduction_matrix_20260523.csv](manifest/paper_result_reproduction_matrix_20260523.csv#L1).
