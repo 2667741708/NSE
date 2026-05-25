@@ -44,7 +44,7 @@ all crowd runs and only vary `dataset`, `train_root`, `lpi`, and `exp_name`.
 - `--mixup_alpha 1.0 --lsr 0.0`
 - `--k_val 5 --delta 1.0 --history_len 15 --consensus_power 2.0`
 - `--sim_mode_1 topology_daes --sim_mode_2 topology_daes --knn_heads 1`
-- `--max_w_model 0.1`
+- `--max_w_model 0.5`
 - `--out ./out_ultimate --seeds 1 2 3`
 
 Reference commands

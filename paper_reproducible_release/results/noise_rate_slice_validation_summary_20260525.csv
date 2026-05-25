@@ -1,0 +1,7 @@
+track,condition,seed,single_seed_best_acc,single_seed_final_acc,paper_three_seed_final,delta_final_minus_paper_mean,status,master_log
+noise_rate_slice,CIFAR10_q050_eta01_seed1,1,95.87,95.68,95.93 +/- 0.19,-0.25,completed,/home/c201/公共/whm/PALS-SOFT/双视图单视图实验结果/results/nse_noise_rate_slice_validation_20260525/main/CIFAR10_q050_eta01_seed1/master_log.txt
+noise_rate_slice,CIFAR10_q050_eta02_seed1,1,95.43,95.34,95.19 +/- 0.13,0.15,completed,/home/c201/公共/whm/PALS-SOFT/双视图单视图实验结果/results/nse_noise_rate_slice_validation_20260525/main/CIFAR10_q050_eta02_seed1/master_log.txt
+noise_rate_slice,CIFAR10_q050_eta03_seed1,1,94.93,94.80,94.82 +/- 0.04,-0.02,completed,/home/c201/公共/whm/PALS-SOFT/双视图单视图实验结果/results/nse_noise_rate_slice_validation_20260525/main/CIFAR10_q050_eta03_seed1/master_log.txt
+noise_rate_slice,CIFAR100_q005_eta01_seed1,1,81.06,80.95,80.32 +/- 0.47,0.63,completed,/home/c201/公共/whm/PALS-SOFT/双视图单视图实验结果/results/nse_noise_rate_slice_validation_20260525/main/CIFAR100_q005_eta01_seed1/master_log.txt
+noise_rate_slice,CIFAR100_q005_eta04_seed1,1,78.23,78.06,78.04 +/- 0.06,0.02,completed,/home/c201/公共/whm/PALS-SOFT/双视图单视图实验结果/results/nse_noise_rate_slice_validation_20260525/main/CIFAR100_q005_eta04_seed1/master_log.txt
+noise_rate_slice,CIFAR100_q005_eta05_seed1,1,77.31,77.06,76.69 +/- 0.46,0.37,completed,/home/c201/公共/whm/PALS-SOFT/双视图单视图实验结果/results/nse_noise_rate_slice_validation_20260525/main/CIFAR100_q005_eta05_seed1/master_log.txt
