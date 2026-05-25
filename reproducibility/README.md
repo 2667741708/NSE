@@ -109,3 +109,9 @@ Additional validation launched on 2026-05-25:
 - c201 noise-rate slice validation for CIFAR-10 `q=0.5, eta=0.1/0.2/0.3`
   and CIFAR-100 `q=0.05, eta=0.1/0.4/0.5`, using the same main NSE script
   with seed `1`.
+
+Additional check after completion on 2026-05-25:
+
+- The six noise-rate validation rows completed on c201. The compact comparison
+  against paper three-seed values is stored in
+  [noise_rate_slice_validation_summary_20260525.csv](../paper_reproducible_release/results/noise_rate_slice_validation_summary_20260525.csv).

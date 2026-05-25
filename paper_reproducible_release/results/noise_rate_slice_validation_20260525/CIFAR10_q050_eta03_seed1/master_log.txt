@@ -1,0 +1,16 @@
+2026-05-25 05:43:32 - [INFO] - ========================= Starting Experiment Series =========================
+2026-05-25 05:43:32 - [INFO] - Base Settings: {'exp_name': 'main/CIFAR10_q050_eta03_seed1', 'dataset': 'CIFAR10', 'train_root': '/home/c201/公共/whm/PALS-SOFT/自适应LSR草稿_v3ref_only_20260409/data', 'out': '/home/c201/公共/whm/PALS-SOFT/双视图单视图实验结果/results/nse_noise_rate_slice_validation_20260525', 'seeds': [1], 'num_workers': 4, 'cuda_dev': 0, 'pr': 0.5, 'nr': 0.3, 'lpi': 10, 'slice': 1, 'reliable_selection_mode': 'pals', 'network': 'R18', 'epochs': 500, 'batch_size': 256, 'lr': 0.1, 'wd': 0.001, 'momentum': 0.9, 'lr_scheduler': 'cosine', 'lr_decay_epochs': [60, 120, 160, 200], 'lr_decay_rate': 0.2, 'mixup_alpha': 1.0, 'lsr': 0.0, 'consistency_weight': 1.0, 'no_reliable_mixup': False, 'no_rebalance': False, 'no_softmatch': False, 'no_unreliable_mixup': False, 'no_unreliable_training': False, 'no_rectify': False, 'ema_alpha': 0.999, 'k_val': 15, 'delta': 0.25, 'history_len': 15, 'consensus_power': 2.0, 'fix_dynamic_weight': False, 'sim_mode_1': 'topology_daes', 'sim_mode_2': 'topology_daes', 'topology_rel_mode': 'masked_entropy', 'topology_rel_gamma': 2.0, 'topology_rel_eps': 1e-12, 'warmup_epochs': 250, 'detailed_log': False, 'gating_start_ratio': 0.2, 'gating_max_alpha': 1.0, 'daes_clamp': 0.25, 'daes_entropy_weight': 0.2, 'daes_sharpening_power': 2.0, 'daes_spatial_temp': 0.5, 'daes_base_tau': 0.1, 'daes_entropy_coeff': 0.5, 'daes_sim_power': 2.0, 'daes_topology_ref_mode': 'hard', 'knn_heads': 1, 'enable_knn1_model_fuse': False, 'fusion_mode': 'weighted_sum', 'kl_self_mode': 'with_self', 'adap_rel_gamma': 2.0, 'adap_rel_eps': 1e-12, 'adap_ce_direction': 'knn_over_model', 'model_warmup_epochs': 20, 'max_w_model': 0.5, 'adaptive_prop_depth': False, 'expected_rel_ratio': 0.5}
+================================================================================
+2026-05-25 05:43:32 - [INFO] - --- Starting Run 1/1 with Seed: 1 ---
+2026-05-25 08:08:54 - [INFO] - --- Run 1 Finished. Duration: 145.37 min | Best Acc: 94.93% | Final Acc: 94.80% ---
+
+2026-05-25 08:08:54 - [INFO] - ========================= FINAL SUMMARY =========================
+2026-05-25 08:08:54 - [INFO] - Experiment Name: main/CIFAR10_q050_eta03_seed1
+
+2026-05-25 08:08:54 - [INFO] - Average Run Duration: 145.37 min
+
+2026-05-25 08:08:54 - [INFO] - Individual Best Accuracies: ['94.93%']
+2026-05-25 08:08:54 - [INFO] - Individual Final Epoch Accuracies: ['94.80%']
+2026-05-25 08:08:54 - [INFO] - --> Final Reported (Best Acc): 94.93% ± 0.00%
+2026-05-25 08:08:54 - [INFO] - --> Final Reported (Final Epoch Acc): 94.80% ± 0.00%
+2026-05-25 08:08:54 - [INFO] - ================================================================================
